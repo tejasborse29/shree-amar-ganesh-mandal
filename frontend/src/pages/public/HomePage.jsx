@@ -92,12 +92,12 @@ const HomePage = () => {
               <Link to="/events" className="btn btn-primary btn-lg">
                 📜 कार्यक्रम पत्रिका पहा
               </Link>
-              <Link to="/vargani" className="btn btn-saffron btn-lg">
-                🌸 डिजिटल वर्गणी / देणगी
+              <Link to="/about" className="btn btn-outline-gold btn-lg">
+                ℹ️ मंडळाचा इतिहास व कार्य
               </Link>
-              <button onClick={() => setShowQR(true)} className="btn btn-outline-gold btn-lg">
-                📱 बँक QR कोड
-              </button>
+              <Link to="/committee/login" className="btn btn-saffron btn-lg">
+                🔐 समिती व्यवस्थापन Login
+              </Link>
             </div>
 
             {/* Dynamic Live Countdown Box */}
@@ -285,72 +285,6 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-      {/* 6. PUBLIC TRANSPARENCY PREVIEW */}
-      {transparency && (
-        <section className="section-padding" style={{ background: '#FFFFFF', borderTop: '1px solid var(--color-border)' }}>
-          <div className="container">
-            <div style={{ background: 'linear-gradient(135deg, #FFFDF7, #FFF9EB)', border: '2px solid #D4AF37', borderRadius: '24px', padding: '2.5rem', boxShadow: 'var(--shadow-md)' }}>
-              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <span className="section-badge">पारदर्शकता व विश्वास</span>
-                <h2 style={{ fontSize: '2rem', color: 'var(--color-primary)', marginTop: '0.5rem' }}>
-                  मंडळाचा पारदर्शक हिशोब २०२६
-                </h2>
-                <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.95rem' }}>
-                  मंडळाकडे जमा होणाऱ्या प्रत्येक वर्गणीचा व खर्चाचा अधिकृत ताळेबंद.
-                </p>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', textAlign: 'center' }}>
-                <div style={{ background: '#FFFFFF', padding: '1.25rem', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
-                  <div style={{ color: '#16A34A', fontSize: '1.75rem', fontWeight: 900 }}>
-                    ₹ {transparency.totalCollection?.toLocaleString('en-IN') || 0}
-                  </div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
-                    एकूण संकलित वर्गणी (Total Collection)
-                  </div>
-                </div>
-
-                <div style={{ background: '#FFFFFF', padding: '1.25rem', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
-                  <div style={{ color: '#DC2626', fontSize: '1.75rem', fontWeight: 900 }}>
-                    ₹ {transparency.totalExpenses?.toLocaleString('en-IN') || 0}
-                  </div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
-                    एकूण प्रमाणित खर्च (Total Expenses)
-                  </div>
-                </div>
-
-                <div style={{ background: '#FFFFFF', padding: '1.25rem', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
-                  <div style={{ color: '#2563EB', fontSize: '1.75rem', fontWeight: 900 }}>
-                    ₹ {transparency.netBalance?.toLocaleString('en-IN') || 0}
-                  </div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
-                    शिल्लक निधी (Net Balance)
-                  </div>
-                </div>
-
-                <div style={{ background: '#FFFFFF', padding: '1.25rem', borderRadius: '12px', border: '1px solid #E5E7EB' }}>
-                  <div style={{ color: '#D97706', fontSize: '1.75rem', fontWeight: 900 }}>
-                    {transparency.totalReceipts || 0}
-                  </div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
-                    जारी केलेल्या अधिकृत पावत्या
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ textAlign: 'center', marginTop: '1.75rem' }}>
-                <Link to="/transparency" className="btn btn-primary">
-                  सविस्तर हिशोब व ताळेबंद पहा →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* UPI QR Modal Trigger */}
-      <QRModal isOpen={showQR} onClose={() => setShowQR(false)} />
     </div>
   );
 };

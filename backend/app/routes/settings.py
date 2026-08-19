@@ -9,6 +9,7 @@ settings_bp = Blueprint("settings", __name__, url_prefix="/api/settings")
 
 @settings_bp.route("", methods=["GET"])
 @token_required
+@role_required("super_admin")
 def get_settings():
     settings = db.db.settings.find_one({"key": "mandal_settings"}) or {}
     settings.pop("_id", None)

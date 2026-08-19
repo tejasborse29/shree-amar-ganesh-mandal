@@ -96,20 +96,20 @@ function App() {
               >
                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardPage />} />
-                <Route path="members" element={<MembersPage />} />
-                <Route path="receipts" element={<ReceiptsPage />} />
-                <Route path="income" element={<IncomePage />} />
-                <Route path="expenses" element={<ExpensesPage />} />
-                <Route path="volunteers" element={<VolunteersPage />} />
+                <Route path="members" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer', 'receipt_manager']}><MembersPage /></ProtectedRoute>} />
+                <Route path="receipts" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer', 'receipt_manager']}><ReceiptsPage /></ProtectedRoute>} />
+                <Route path="income" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer']}><IncomePage /></ProtectedRoute>} />
+                <Route path="expenses" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer']}><ExpensesPage /></ProtectedRoute>} />
+                <Route path="volunteers" element={<ProtectedRoute allowedRoles={['super_admin']}><VolunteersPage /></ProtectedRoute>} />
                 <Route path="tasks" element={<TasksPage />} />
-                <Route path="events" element={<AdminEventsPage />} />
-                <Route path="gallery" element={<AdminGalleryPage />} />
-                <Route path="announcements" element={<AdminAnnouncementsPage />} />
-                <Route path="social" element={<AdminSocialPage />} />
-                <Route path="reports" element={<ReportsPage />} />
-                <Route path="audit-logs" element={<AuditLogsPage />} />
-                <Route path="users" element={<UsersPage />} />
-                <Route path="settings" element={<SettingsPage />} />
+                <Route path="events" element={<ProtectedRoute allowedRoles={['super_admin', 'event_manager']}><AdminEventsPage /></ProtectedRoute>} />
+                <Route path="gallery" element={<ProtectedRoute allowedRoles={['super_admin', 'event_manager']}><AdminGalleryPage /></ProtectedRoute>} />
+                <Route path="announcements" element={<ProtectedRoute allowedRoles={['super_admin', 'event_manager']}><AdminAnnouncementsPage /></ProtectedRoute>} />
+                <Route path="social" element={<ProtectedRoute allowedRoles={['super_admin', 'event_manager']}><AdminSocialPage /></ProtectedRoute>} />
+                <Route path="reports" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer']}><ReportsPage /></ProtectedRoute>} />
+                <Route path="audit-logs" element={<ProtectedRoute allowedRoles={['super_admin']}><AuditLogsPage /></ProtectedRoute>} />
+                <Route path="users" element={<ProtectedRoute allowedRoles={['super_admin']}><UsersPage /></ProtectedRoute>} />
+                <Route path="settings" element={<ProtectedRoute allowedRoles={['super_admin']}><SettingsPage /></ProtectedRoute>} />
               </Route>
 
               {/* 404 Fallback */}

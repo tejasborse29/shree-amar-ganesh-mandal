@@ -9,6 +9,7 @@ import ExpenseDonutChart from '../../components/charts/ExpenseDonutChart';
 import Skeleton from '../../components/common/Skeleton';
 import Modal from '../../components/common/Modal';
 import PrintableReceipt from '../../components/common/PrintableReceipt';
+import QRModal from '../../components/common/QRModal';
 
 const DashboardPage = () => {
   const { user, hasRole, isVolunteer } = useAuth();
@@ -19,6 +20,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
 
   // Quick Action Modal State
+  const [showQR, setShowQR] = useState(false);
   const [quickReceiptModal, setQuickReceiptModal] = useState(false);
   const [quickExpenseModal, setQuickExpenseModal] = useState(false);
   const [receiptForm, setReceiptForm] = useState({ donorName: '', donorMobile: '', donorAddress: '', amount: '', paymentMode: 'cash', notes: '' });
@@ -154,6 +156,9 @@ const DashboardPage = () => {
               💸 नवीन खर्च नोंदवा
             </button>
           )}
+          <button onClick={() => setShowQR(true)} className="btn btn-saffron btn-sm">
+            📱 बँक QR कोड
+          </button>
           <Link to="/admin/tasks" className="btn btn-outline btn-sm">
             📋 माझी कामे
           </Link>
@@ -500,6 +505,9 @@ const DashboardPage = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Bank QR Code Modal */}
+      <QRModal isOpen={showQR} onClose={() => setShowQR(false)} />
 
     </div>
   );

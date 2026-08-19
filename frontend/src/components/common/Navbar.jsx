@@ -15,10 +15,8 @@ const Navbar = () => {
     { name: 'मुख्यपृष्ठ', path: '/' },
     { name: 'मंडळाविषयी', path: '/about' },
     { name: 'उत्सव २०२६', path: '/events' },
-    { name: 'डिजिटल वर्गणी', path: '/vargani' },
     { name: 'फोटो गॅलरी', path: '/gallery' },
     { name: 'सामाजिक उपक्रम', path: '/social-activities' },
-    { name: 'पारदर्शक हिशोब', path: '/transparency' },
     { name: 'संपर्क', path: '/contact' }
   ];
 

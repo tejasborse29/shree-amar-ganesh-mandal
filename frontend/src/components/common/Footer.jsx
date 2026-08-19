@@ -44,9 +44,9 @@ const Footer = () => {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.9rem' }}>
               <li><Link to="/about" style={{ color: '#D6D3D1' }}>• मंडळाचा इतिहास व कार्य</Link></li>
               <li><Link to="/events" style={{ color: '#D6D3D1' }}>• उत्सव २०२६ कार्यक्रम पत्रिका</Link></li>
-              <li><Link to="/vargani" style={{ color: '#D6D3D1' }}>• ऑनलाइन डिजिटल वर्गणी</Link></li>
               <li><Link to="/gallery" style={{ color: '#D6D3D1' }}>• उत्सव आठवणी व गॅलरी</Link></li>
-              <li><Link to="/transparency" style={{ color: '#D6D3D1' }}>• मंडळाचा पारदर्शक हिशोब</Link></li>
+              <li><Link to="/social-activities" style={{ color: '#D6D3D1' }}>• मंडळाचे सामाजिक उपक्रम</Link></li>
+              <li><Link to="/contact" style={{ color: '#D6D3D1' }}>• मंडळ संपर्क व पत्ता</Link></li>
               <li><Link to="/committee/login" style={{ color: '#FB923C' }}>• 🔐 समिती व्यवस्थापन Login</Link></li>
             </ul>
           </div>
