@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /events
+Allow: /gallery
+Allow: /social-activities
+Allow: /contact
+Allow: /verify/
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://shreeamarganesh.in/sitemap.xml
