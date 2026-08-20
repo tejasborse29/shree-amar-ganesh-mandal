@@ -112,5 +112,42 @@ class APITestCase(unittest.TestCase):
         self.assertEqual(csv_res.status_code, 200)
         self.assertEqual(csv_res.mimetype, "text/csv")
 
+    def test_07_festivals_and_transactions(self):
+        # Admin login
+        res = self.client.post("/api/auth/login", json={"identifier": "admin", "password": "Admin@AMGM2026"})
+        token = res.get_json()["token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # 1. Get Festivals
+        f_res = self.client.get("/api/festivals", headers=headers)
+        self.assertEqual(f_res.status_code, 200)
+        f_data = f_res.get_json()
+        self.assertTrue(f_data["success"])
+        self.assertGreaterEqual(len(f_data["festivals"]), 1)
+
+        # 2. Get Unified Transactions
+        t_res = self.client.get("/api/transactions", headers=headers)
+        self.assertEqual(t_res.status_code, 200)
+        t_data = t_res.get_json()
+        self.assertTrue(t_data["success"])
+        self.assertIn("summary", t_data)
+        self.assertIn("transactions", t_data)
+
+    def test_08_documents_and_join_codes(self):
+        res = self.client.post("/api/auth/login", json={"identifier": "admin", "password": "Admin@AMGM2026"})
+        token = res.get_json()["token"]
+        headers = {"Authorization": f"Bearer {token}"}
+
+        # 1. Documents
+        d_res = self.client.get("/api/documents", headers=headers)
+        self.assertEqual(d_res.status_code, 200)
+        self.assertTrue(d_res.get_json()["success"])
+
+        # 2. Join Codes
+        j_res = self.client.get("/api/join-codes", headers=headers)
+        self.assertEqual(j_res.status_code, 200)
+        self.assertTrue(j_res.get_json()["success"])
+        self.assertEqual(j_res.get_json()["primaryMandalCode"], "MND-AMGM")
+
 if __name__ == "__main__":
     unittest.main()

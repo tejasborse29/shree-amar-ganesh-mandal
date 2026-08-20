@@ -35,6 +35,10 @@ def create_app(config_class=Config):
     from app.routes.audit_logs import audit_bp
     from app.routes.settings import settings_bp
     from app.routes.users import users_bp
+    from app.routes.festivals import festivals_bp
+    from app.routes.transactions import transactions_bp
+    from app.routes.documents import documents_bp
+    from app.routes.join_codes import join_codes_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(public_bp)
@@ -53,6 +57,10 @@ def create_app(config_class=Config):
     app.register_blueprint(audit_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(festivals_bp)
+    app.register_blueprint(transactions_bp)
+    app.register_blueprint(documents_bp)
+    app.register_blueprint(join_codes_bp)
     
     # Route for uploaded files
     @app.route("/uploads/<filename>")

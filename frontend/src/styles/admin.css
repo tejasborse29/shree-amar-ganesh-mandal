@@ -278,13 +278,14 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
+    height: 64px;
     background: #FFFFFF;
-    border-top: 1px solid var(--color-border);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+    border-top: 1px solid #E7E5E4;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
     z-index: 999;
     align-items: center;
     justify-content: space-around;
+    padding: 0 0.5rem;
   }
 
   .bottom-nav-item {
@@ -292,18 +293,476 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 600;
-    color: var(--color-text-muted);
+    color: #78716C;
     text-decoration: none;
     gap: 2px;
+    flex: 1;
+    height: 100%;
+    transition: color 0.15s ease;
   }
 
   .bottom-nav-item.active {
-    color: var(--color-primary);
+    color: #EA580C; /* Mandal Orange Active */
+    font-weight: 700;
   }
 
   .bottom-nav-icon {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
+    line-height: 1;
   }
 }
+
+/* ==========================================================================
+   MOBILE-FIRST MANDAL ENHANCEMENTS (MANDALBOOK / PRO SAAS STYLES)
+   ========================================================================== */
+
+/* 1. Festival Selector Top Header Bar */
+.fest-header-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #FFF7ED;
+  border: 1px solid #FDBA74;
+  color: #C2410C;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.fest-header-pill:hover {
+  background: #FFEDD5;
+  border-color: #FB923C;
+}
+
+/* 2. Balance Hero Card (Reference Screenshot 4) */
+.balance-hero-card {
+  background: linear-gradient(135deg, #B45309 0%, #9A3412 100%);
+  color: #FFFFFF;
+  border-radius: 18px;
+  padding: 1.5rem 1.4rem 1.25rem;
+  box-shadow: 0 10px 25px -5px rgba(154, 52, 18, 0.35);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.balance-hero-card::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  bottom: -30px;
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.balance-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: #FED7AA;
+  margin-bottom: 0.4rem;
+}
+.balance-card-amount {
+  font-size: 2.3rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #FFFFFF;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.balance-eye-btn {
+  background: transparent;
+  border: none;
+  color: #FED7AA;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.2rem;
+  display: inline-flex;
+  align-items: center;
+}
+.balance-stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  padding-top: 0.85rem;
+}
+.balance-stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+}
+.balance-stat-chip.income span { color: #86EFAC; font-weight: 800; font-size: 1rem; }
+.balance-stat-chip.expense span { color: #FCA5A5; font-weight: 800; font-size: 1rem; }
+
+/* 3. Sticky Bottom Mobile Action Bar (Green + जमा, Red - खर्च) */
+.sticky-action-bar {
+  display: none;
+}
+@media (max-width: 992px) {
+  .sticky-action-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    position: fixed;
+    bottom: 64px; /* Above 5-tab bar */
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+    padding: 0.6rem 1rem;
+    border-top: 1px solid #E7E5E4;
+    z-index: 990;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  }
+}
+.btn-action-green {
+  background: #16A34A;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 1rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+  transition: transform 0.1s ease;
+}
+.btn-action-green:active { transform: scale(0.97); }
+
+.btn-action-red {
+  background: #DC2626;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 1rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  transition: transform 0.1s ease;
+}
+.btn-action-red:active { transform: scale(0.97); }
+
+/* 4. Filter Chips Bar (Screenshot 4 right) */
+.search-chip-bar {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  margin-bottom: 1rem;
+  scrollbar-width: none;
+}
+.search-chip-bar::-webkit-scrollbar { display: none; }
+.filter-chip {
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1.5px solid #E7E5E4;
+  color: #57534E;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+.filter-chip:hover {
+  background: #F5F5F4;
+}
+.filter-chip.active {
+  background: #C2410C;
+  border-color: #C2410C;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+/* 5. Transactions List Feed */
+.date-section-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #78716C;
+  margin: 1.25rem 0 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: flex;
+  justify-content: space-between;
+}
+.txn-card-item {
+  background: #FFFFFF;
+  border: 1px solid #E7E5E4;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.txn-card-item:hover {
+  border-color: #D6D3D1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+.txn-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.txn-icon-box.income { background: #DCFCE7; color: #16A34A; }
+.txn-icon-box.expense { background: #FEE2E2; color: #DC2626; }
+.txn-icon-box.pending { background: #FEF3C7; color: #D97706; }
+
+.txn-amt-positive {
+  color: #16A34A;
+  font-weight: 800;
+  font-size: 1.1rem;
+  text-align: right;
+}
+.txn-amt-negative {
+  color: #DC2626;
+  font-weight: 800;
+  font-size: 1.1rem;
+  text-align: right;
+}
+
+/* 6. Bottom Sheet / Modal (Screenshot 3 & Filters) */
+.bottom-sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.bottom-sheet-content {
+  background: #FFFFFF;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 1.25rem 1.5rem 2rem;
+  overflow-y: auto;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.bottom-sheet-drag-handle {
+  width: 40px;
+  height: 4px;
+  background: #D6D3D1;
+  border-radius: 999px;
+  margin: 0 auto 1rem;
+}
+.bottom-sheet-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1C1917;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.bottom-sheet-subtext {
+  font-size: 0.85rem;
+  color: #78716C;
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+.festival-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+.festival-select-card {
+  border: 1.5px solid #E7E5E4;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-weight: 700;
+  color: #292524;
+  transition: all 0.15s ease;
+}
+.festival-select-card.selected {
+  border-color: #EA580C;
+  background: #FFF7ED;
+  color: #C2410C;
+}
+.active-badge-tag {
+  background: #FFEDD5;
+  color: #C2410C;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+.check-icon {
+  color: #EA580C;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+.active-fest-notice {
+  background: #F5F5F4;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #57534E;
+  margin-bottom: 1rem;
+}
+.btn-add-festival-trigger {
+  width: 100%;
+  background: #FAFAF9;
+  border: 1.5px dashed #D6D3D1;
+  color: #44403C;
+  padding: 0.75rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+/* 7. Mandal Hub (Screenshots 1 & 2) */
+.mandal-profile-header-card {
+  background: #FFFFFF;
+  border: 1px solid #E7E5E4;
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+.mandal-avatar-circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #FFF7ED;
+  border: 2px solid #FDBA74;
+  color: #C2410C;
+  font-size: 1.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem;
+}
+.mandal-hub-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1C1917;
+  text-transform: capitalize;
+  margin-bottom: 0.75rem;
+}
+.mandal-code-banner {
+  background: #FAFAF9;
+  border: 1px solid #E7E5E4;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #57534E;
+}
+.mandal-code-tag {
+  font-weight: 800;
+  color: #1C1917;
+  letter-spacing: 0.05em;
+}
+.mandal-hub-menu-card {
+  background: #FFFFFF;
+  border: 1px solid #E7E5E4;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+}
+.mandal-hub-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 1.25rem;
+  border-bottom: 1px solid #F5F5F4;
+  color: #292524;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background 0.15s ease;
+}
+.mandal-hub-menu-item:last-child {
+  border-bottom: none;
+}
+.mandal-hub-menu-item:hover {
+  background: #FAFAF9;
+}
+.mandal-menu-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+.mandal-menu-icon {
+  font-size: 1.2rem;
+  color: #C2410C;
+}
+.mandal-menu-arrow {
+  color: #A8A29E;
+  font-size: 1.1rem;
+}
+
+/* 8. Notifications Empty State (Screenshot 5) */
+.notification-empty-container {
+  min-height: 65vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+}
+.check-green-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #DCFCE7;
+  color: #16A34A;
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+

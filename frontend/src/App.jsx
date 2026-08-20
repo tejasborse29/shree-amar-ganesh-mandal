@@ -22,6 +22,11 @@ import CommitteeLoginPage from './pages/public/CommitteeLoginPage';
 
 // Admin Pages
 import DashboardPage from './pages/admin/DashboardPage';
+import TransactionsPage from './pages/admin/TransactionsPage';
+import NotificationsPage from './pages/admin/NotificationsPage';
+import MandalHubPage from './pages/admin/MandalHubPage';
+import DocumentsPage from './pages/admin/DocumentsPage';
+import LedgerPage from './pages/admin/LedgerPage';
 import MembersPage from './pages/admin/MembersPage';
 import ReceiptsPage from './pages/admin/ReceiptsPage';
 import IncomePage from './pages/admin/IncomePage';
@@ -96,6 +101,13 @@ function App() {
               >
                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="transactions" element={<TransactionsPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
+                <Route path="mandal-hub" element={<MandalHubPage />} />
+                <Route path="documents" element={<DocumentsPage />} />
+                <Route path="ledger" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer']}><LedgerPage /></ProtectedRoute>} />
+                
+                {/* Specific Management Modules */}
                 <Route path="members" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer', 'receipt_manager']}><MembersPage /></ProtectedRoute>} />
                 <Route path="receipts" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer', 'receipt_manager']}><ReceiptsPage /></ProtectedRoute>} />
                 <Route path="income" element={<ProtectedRoute allowedRoles={['super_admin', 'treasurer']}><IncomePage /></ProtectedRoute>} />
