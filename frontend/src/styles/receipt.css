@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap');
+
 /* Digital Receipt Card and Thermal/A4 Slip Styles */
 .receipt-wrapper {
   max-width: 640px;
@@ -9,6 +11,8 @@
   padding: 2rem;
   position: relative;
   overflow: hidden;
+  font-family: 'Mukta', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1F2937;
 }
 
 .receipt-watermark-cancelled {
@@ -45,6 +49,7 @@
   font-weight: 800;
   color: var(--color-primary);
   line-height: 1.2;
+  font-family: 'Mukta', 'Noto Sans Devanagari', sans-serif;
 }
 
 .receipt-mandal-sub {
@@ -63,6 +68,7 @@
   letter-spacing: 0.05em;
   border-radius: var(--radius-sm);
   margin-bottom: 1.25rem;
+  font-family: 'Mukta', 'Noto Sans Devanagari', sans-serif;
 }
 
 .receipt-grid-details {
@@ -179,25 +185,63 @@
   background: #1EBE5D;
 }
 
-/* Print CSS rules */
+/* PRINT MEDIA STYLES - STABLE ZERO-GLITCH DEVANGARI TYPOGRAPHY */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 1cm;
+  }
+
+  html, body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-family: 'Mukta', 'Noto Sans Devanagari', Arial, sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide screen elements */
+  .no-print,
+  .receipt-action-bar,
+  .admin-sidebar,
+  .admin-header,
+  .admin-mobile-bottom-bar,
+  .sticky-action-bar,
+  .public-header,
+  .top-ticker-bar,
+  .public-footer,
+  .modal-close-btn {
+    display: none !important;
+  }
+
+  /* Receipt Print Isolation */
   body * {
     visibility: hidden;
   }
-  .receipt-wrapper, .receipt-wrapper * {
-    visibility: visible;
+
+  .receipt-wrapper,
+  .receipt-wrapper *,
+  #ledger-printable-area,
+  #ledger-printable-area * {
+    visibility: visible !important;
   }
+
   .receipt-wrapper {
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    max-width: 100%;
-    border: none;
-    box-shadow: none;
-    padding: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: 2px solid #D4AF37 !important;
+    box-shadow: none !important;
+    padding: 1.5rem !important;
+    font-family: 'Mukta', 'Noto Sans Devanagari', sans-serif !important;
   }
-  .receipt-action-bar, .public-header, .top-ticker-bar, .public-footer {
-    display: none !important;
+
+  #ledger-printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
   }
 }

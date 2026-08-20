@@ -1,5 +1,6 @@
 import os
 import io
+import unicodedata
 import qrcode
 from PIL import Image as PILImage
 from reportlab.lib.pagesizes import A4
@@ -28,6 +29,14 @@ try:
         print("[OK] Registered Mukta bilingual font for PDF generation.")
 except Exception as e:
     print(f"[WARN] Could not register Mukta font, falling back: {e}")
+
+def sanitize_text(text) -> str:
+    """Normalizes Unicode text to NFC to ensure Marathi glyphs render without splitting."""
+    if not text:
+        return ""
+    text_str = str(text)
+    return unicodedata.normalize("NFC", text_str)
+
 
 def generate_receipt_pdf(receipt: dict, mandal: dict, verify_url: str = "") -> bytes:
     """
@@ -117,11 +126,11 @@ def generate_receipt_pdf(receipt: dict, mandal: dict, verify_url: str = "") -> b
     )
 
     # 1. Header with Mandal Name
-    mandal_name = mandal.get("name", "श्री अमर गणेश मित्र मंडळ")
-    mandal_tagline = mandal.get("tagline", "भक्ती परंपरेची… व्यवस्थापन आधुनिकतेचं!")
-    mandal_address = mandal.get("address", "अमर गणेश चौक, शनिवार पेठ, पुणे, महाराष्ट्र - ४११ ०३०")
-    contact_no = mandal.get("contactNumber", "+91 98765 43210")
-    festival_year = receipt.get("festivalYear", mandal.get("festivalYear", 2026))
+    mandal_name = sanitize_text(mandal.get("name", "श्री अमर गणेश मित्र मंडळ"))
+    mandal_tagline = sanitize_text(mandal.get("tagline", "भक्ती परंपरेची… व्यवस्थापन आधुनिकतेचं!"))
+    mandal_address = sanitize_text(mandal.get("address", "अमर गणेश चौक, शनिवार पेठ, पुणे, महाराष्ट्र - ४११ ०३०"))
+    contact_no = sanitize_text(mandal.get("contactNumber", "+91 98765 43210"))
+    festival_year = sanitize_text(receipt.get("festivalYear", mandal.get("festivalYear", 2026)))
     
     story.append(Paragraph(f"<b>{mandal_name}</b>", title_style))
     story.append(Spacer(1, 4))
@@ -146,22 +155,22 @@ def generate_receipt_pdf(receipt: dict, mandal: dict, verify_url: str = "") -> b
     story.append(Spacer(1, 12))
     
     # 3. Receipt Details & QR Code
-    receipt_no = receipt.get("receiptNumber", "AMGM-2026-000001")
-    date_str = str(receipt.get("createdAt") or receipt.get("date") or "")[:10]
+    receipt_no = sanitize_text(receipt.get("receiptNumber", "AMGM-2026-000001"))
+    date_str = sanitize_text(str(receipt.get("createdAt") or receipt.get("date") or "")[:10])
     if not date_str:
         import datetime
         date_str = datetime.date.today().strftime("%Y-%m-%d")
     amount = float(receipt.get("amount", 0))
-    donor_name = receipt.get("donorName", "-")
-    donor_mobile = receipt.get("donorMobile", "-")
-    donor_address = receipt.get("donorAddress", "-")
-    payment_mode = str(receipt.get("paymentMode", "CASH")).upper()
-    transaction_ref = receipt.get("transactionRef") or "N/A"
-    collected_by = receipt.get("collectedByName") or receipt.get("collectedBy", "Digital Vargani Portal")
+    donor_name = sanitize_text(receipt.get("donorName", "-"))
+    donor_mobile = sanitize_text(receipt.get("donorMobile", "-"))
+    donor_address = sanitize_text(receipt.get("donorAddress", "-"))
+    payment_mode = sanitize_text(str(receipt.get("paymentMode", "CASH")).upper())
+    transaction_ref = sanitize_text(receipt.get("transactionRef") or "N/A")
+    collected_by = sanitize_text(receipt.get("collectedByName") or receipt.get("collectedBy", "Digital Vargani Portal"))
     status = "वैध (ACTIVE)" if receipt.get("status", "ACTIVE") == "ACTIVE" else "रद्द (CANCELLED)"
     
     # Generate QR Code image in memory
-    qr_url = verify_url or f"http://localhost:5173/verify/{receipt_no}"
+    qr_url = verify_url or f"https://shreeamarganesh.org/verify/{receipt_no}"
     qr = qrcode.QRCode(version=1, box_size=4, border=1)
     qr.add_data(qr_url)
     qr.make(fit=True)
@@ -171,7 +180,7 @@ def generate_receipt_pdf(receipt: dict, mandal: dict, verify_url: str = "") -> b
     qr_buf.seek(0)
     qr_flowable = Image(qr_buf, width=1.3*inch, height=1.3*inch)
     
-    # QR Container Sub-Table (Prevents table span overlap glitch)
+    # QR Container Sub-Table
     qr_box_data = [
         [qr_flowable],
         [Paragraph("Scan QR to Verify<br/>पावती पडताळा", qr_caption_style)]
@@ -283,8 +292,8 @@ def generate_financial_report_pdf(summary: dict, mandal: dict, festival_year: in
         "MandalReportSub",
         parent=styles["Normal"],
         fontName=FONT_BOLD,
-        fontSize=12,
-        leading=16,
+        fontSize=11,
+        leading=15,
         alignment=TA_CENTER,
         textColor=colors.HexColor("#1F2937")
     )
@@ -306,16 +315,16 @@ def generate_financial_report_pdf(summary: dict, mandal: dict, festival_year: in
     )
     
     # Header
-    mandal_name = mandal.get("name", "श्री अमर गणेश मित्र मंडळ")
+    mandal_name = sanitize_text(mandal.get("name", "श्री अमर गणेश मित्र मंडळ"))
     story.append(Paragraph(f"<b>{mandal_name}</b>", header_style))
     story.append(Spacer(1, 4))
-    story.append(Paragraph(f"वार्षिक आर्थिक ताळेबंद व अहवाल / ANNUAL FINANCIAL STATEMENT ({festival_year})", sub_style))
+    story.append(Paragraph(f"वार्षिक आर्थिक ताळेबंद व अहवाल / ANNUAL FINANCIAL AUDIT STATEMENT ({festival_year})", sub_style))
     story.append(Spacer(1, 15))
     
     # Summary KPI Box
-    total_income = summary.get("totalIncome", 0)
-    total_expenses = summary.get("totalExpenses", 0)
-    balance = summary.get("currentBalance", total_income - total_expenses)
+    total_income = float(summary.get("totalIncome", 0))
+    total_expenses = float(summary.get("totalExpenses", 0))
+    balance = float(summary.get("currentBalance", total_income - total_expenses))
     
     kpi_data = [
         [
@@ -345,10 +354,13 @@ def generate_financial_report_pdf(summary: dict, mandal: dict, festival_year: in
     ]
     for item in summary.get("expenseByCategory", []):
         exp_rows.append([
-            Paragraph(str(item.get("category")), table_cell_style),
+            Paragraph(sanitize_text(str(item.get("category"))), table_cell_style),
             Paragraph(f"{item.get('count')} नोंदी", table_cell_style),
             Paragraph(f"₹ {float(item.get('amount', 0)):,.2f}", table_cell_style)
         ])
+        
+    if len(exp_rows) == 1:
+        exp_rows.append([Paragraph("कोणताही खर्च नाही", table_cell_style), Paragraph("0", table_cell_style), Paragraph("₹0.00", table_cell_style)])
         
     exp_table = Table(exp_rows, colWidths=[240, 120, 160])
     exp_table.setStyle(TableStyle([
@@ -369,6 +381,137 @@ def generate_financial_report_pdf(summary: dict, mandal: dict, festival_year: in
         ]
     ]
     sig_table = Table(sig_data, colWidths=[173, 173, 174])
+    story.append(sig_table)
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def generate_ledger_pdf(transactions: list, mandal: dict, festival_year: int) -> bytes:
+    """
+    Generates an official A4 General Ledger (नोंदवही व खतावणी) PDF with running balances.
+    Renders 100% crisp Mukta Marathi typography without any screen blinking or glitches.
+    """
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30
+    )
+    
+    story = []
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        "LedgerTitle",
+        parent=styles["Normal"],
+        fontName=FONT_BOLD,
+        fontSize=18,
+        leading=22,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#800000")
+    )
+    
+    sub_style = ParagraphStyle(
+        "LedgerSub",
+        parent=styles["Normal"],
+        fontName=FONT_BOLD,
+        fontSize=11,
+        leading=15,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#1F2937")
+    )
+    
+    tbl_hdr = ParagraphStyle("LHdr", fontName=FONT_BOLD, fontSize=9, textColor=colors.white, alignment=TA_CENTER)
+    tbl_cell = ParagraphStyle("LCell", fontName=FONT_REGULAR, fontSize=8.5, leading=11, textColor=colors.HexColor("#111827"))
+    tbl_cell_cr = ParagraphStyle("LCr", fontName=FONT_BOLD, fontSize=8.5, leading=11, textColor=colors.HexColor("#15803D"), alignment=TA_RIGHT)
+    tbl_cell_dr = ParagraphStyle("LDr", fontName=FONT_BOLD, fontSize=8.5, leading=11, textColor=colors.HexColor("#B91C1C"), alignment=TA_RIGHT)
+    tbl_cell_bal = ParagraphStyle("LBal", fontName=FONT_BOLD, fontSize=8.5, leading=11, textColor=colors.HexColor("#1D4ED8"), alignment=TA_RIGHT)
+
+    mandal_name = sanitize_text(mandal.get("name", "श्री अमर गणेश मित्र मंडळ"))
+    story.append(Paragraph(f"<b>{mandal_name}</b>", title_style))
+    story.append(Spacer(1, 3))
+    story.append(Paragraph(f"अधिकृत नोंदवही व खतावणी / GENERAL ACCOUNTING LEDGER ({festival_year})", sub_style))
+    story.append(Spacer(1, 12))
+    
+    # Calculate running balances chronologically
+    sorted_oldest = list(reversed(transactions))
+    running_bal = 0.0
+    total_cr = 0.0
+    total_dr = 0.0
+    
+    rows = [
+        [
+            Paragraph("दिनांक<br/>Date", tbl_hdr),
+            Paragraph("तपशील / खतावणी<br/>Particulars / Description", tbl_hdr),
+            Paragraph("पावती / बिल क्र.<br/>Ref No.", tbl_hdr),
+            Paragraph("जमा (Credit)<br/>(₹)", tbl_hdr),
+            Paragraph("खर्च (Debit)<br/>(₹)", tbl_hdr),
+            Paragraph("शिल्लक (Balance)<br/>(₹)", tbl_hdr)
+        ]
+    ]
+    
+    for t in sorted_oldest:
+        is_inc = t.get("isIncome", False) or t.get("type") == "income"
+        is_exp = t.get("type") == "expense"
+        amt = float(t.get("amount", 0))
+        
+        cr = amt if is_inc else 0.0
+        dr = amt if is_exp else 0.0
+        running_bal += (cr - dr)
+        total_cr += cr
+        total_dr += dr
+        
+        person = sanitize_text(t.get("personName") or t.get("donorName") or t.get("vendor") or "-")
+        cat = sanitize_text(t.get("category", ""))
+        ref = sanitize_text(t.get("receiptNumber") or t.get("billNumber") or "-")
+        dt_str = sanitize_text(str(t.get("dateDay") or t.get("date") or "")[:10])
+        
+        particulars = f"<b>{person}</b><br/><font color='#6B7280' size=7.5>{cat}</font>"
+        
+        rows.append([
+            Paragraph(dt_str, tbl_cell),
+            Paragraph(particulars, tbl_cell),
+            Paragraph(ref, tbl_cell),
+            Paragraph(f"+{cr:,.2f}" if cr > 0 else "-", tbl_cell_cr),
+            Paragraph(f"-{dr:,.2f}" if dr > 0 else "-", tbl_cell_dr),
+            Paragraph(f"{running_bal:,.2f}", tbl_cell_bal)
+        ])
+        
+    # Totals Row
+    rows.append([
+        Paragraph("<b>एकूण (TOTAL)</b>", tbl_cell),
+        Paragraph("", tbl_cell),
+        Paragraph("", tbl_cell),
+        Paragraph(f"<b>₹ {total_cr:,.2f}</b>", tbl_cell_cr),
+        Paragraph(f"<b>₹ {total_dr:,.2f}</b>", tbl_cell_dr),
+        Paragraph(f"<b>₹ {running_bal:,.2f}</b>", tbl_cell_bal)
+    ])
+    
+    ledger_table = Table(rows, colWidths=[65, 175, 75, 75, 75, 70])
+    ledger_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#800000")),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor("#FEF3C7")),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0")),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    story.append(ledger_table)
+    story.append(Spacer(1, 20))
+    
+    # Signatures
+    sig_data = [
+        [
+            Paragraph("____________________________<br/><b>अध्यक्ष / President</b>", ParagraphStyle("LS1", fontName=FONT_BOLD, alignment=TA_CENTER, fontSize=9)),
+            Paragraph("____________________________<br/><b>खजिनदार / Treasurer</b>", ParagraphStyle("LS2", fontName=FONT_BOLD, alignment=TA_CENTER, fontSize=9))
+        ]
+    ]
+    sig_table = Table(sig_data, colWidths=[265, 270])
     story.append(sig_table)
     
     doc.build(story)

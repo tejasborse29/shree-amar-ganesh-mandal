@@ -6,9 +6,9 @@ const Footer = () => {
   const { config } = useConfig();
 
   return (
-    <footer className="public-footer" style={{ background: '#1C1917', color: '#E7E5E4', borderTop: '3px solid #D4AF37', paddingTop: '4rem', paddingBottom: '2rem' }}>
+    <footer className="public-footer" style={{ background: '#1C1917', color: '#E7E5E4', borderTop: '3px solid #D4AF37', paddingTop: '3.5rem', paddingBottom: '2rem' }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2.5rem', marginBottom: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem', marginBottom: '2.5rem' }}>
           
           {/* Brand Col */}
           <div>
@@ -49,20 +49,6 @@ const Footer = () => {
               <li><Link to="/contact" style={{ color: '#D6D3D1' }}>• मंडळ संपर्क व पत्ता</Link></li>
               <li><Link to="/committee/login" style={{ color: '#FB923C' }}>• 🔐 समिती व्यवस्थापन Login</Link></li>
             </ul>
-          </div>
-
-          {/* Bank & UPI Donation Details */}
-          <div>
-            <h4 style={{ color: '#FDE047', fontSize: '1.05rem', fontWeight: 700, marginBottom: '1.2rem', borderBottom: '1px solid #44403C', paddingBottom: '0.5rem' }}>
-              अधिकृत बँक तपशील
-            </h4>
-            <div style={{ background: '#292524', padding: '1rem', borderRadius: '8px', border: '1px solid #44403C', fontSize: '0.85rem' }}>
-              <p style={{ color: '#FDE047', fontWeight: 700, marginBottom: '0.3rem' }}>UPI ID: {config.upiId}</p>
-              <p style={{ color: '#A8A29E' }}>नाव: {config.bankDetails?.accountName}</p>
-              <p style={{ color: '#A8A29E' }}>बँक: {config.bankDetails?.bankName}</p>
-              <p style={{ color: '#A8A29E' }}>खाते क्र.: {config.bankDetails?.accountNumber}</p>
-              <p style={{ color: '#A8A29E' }}>IFSC: {config.bankDetails?.ifsc}</p>
-            </div>
           </div>
 
           {/* Contact Details */}

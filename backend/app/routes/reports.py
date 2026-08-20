@@ -2,17 +2,13 @@ import io
 import csv
 import datetime
 from flask import Blueprint, request, jsonify, g, send_file, Response
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
 
 from app.extensions import db
 from app.config import Config
 from app.middleware.auth import token_required, role_required
 from app.services.financial_service import get_financial_summary
 from app.utils.helpers import serialize_docs, format_inr
+from app.utils.pdf_generator import generate_financial_report_pdf, generate_ledger_pdf
 
 reports_bp = Blueprint("reports", __name__, url_prefix="/api/reports")
 
@@ -24,17 +20,20 @@ def get_financial_report():
     start_date = request.args.get("startDate")
     end_date = request.args.get("endDate")
     
-    summary = get_financial_summary(festival_year)
+    summary = get_financial_summary(festival_year, start_date=start_date, end_date=end_date)
     
     # Optional detailed lists
     income_query = {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}
     expense_query = {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}
     
     if start_date and end_date:
-        s_dt = datetime.datetime.fromisoformat(start_date)
-        e_dt = datetime.datetime.fromisoformat(end_date) + datetime.timedelta(days=1)
-        income_query["date"] = {"$gte": s_dt, "$lt": e_dt}
-        expense_query["date"] = {"$gte": s_dt, "$lt": e_dt}
+        try:
+            s_dt = datetime.datetime.fromisoformat(start_date)
+            e_dt = datetime.datetime.fromisoformat(end_date) + datetime.timedelta(days=1)
+            income_query["date"] = {"$gte": s_dt, "$lt": e_dt}
+            expense_query["date"] = {"$gte": s_dt, "$lt": e_dt}
+        except Exception:
+            pass
         
     income_records = list(db.db.income.find(income_query).sort("date", -1).limit(100))
     expense_records = list(db.db.expenses.find(expense_query).sort("date", -1).limit(100))
@@ -50,7 +49,7 @@ def get_financial_report():
 @token_required
 @role_required("super_admin", "treasurer")
 def export_csv_report():
-    report_type = request.args.get("type", "all") # income, expense, receipts, all
+    report_type = request.args.get("type", "all")
     festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
     
     output = io.StringIO()
@@ -97,86 +96,93 @@ def export_csv_report():
     )
 
 @reports_bp.route("/export-pdf", methods=["GET"])
+@reports_bp.route("/download-pdf", methods=["GET"])
 @token_required
 @role_required("super_admin", "treasurer")
 def export_pdf_report():
     festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
     summary = get_financial_summary(festival_year)
-    settings = db.db.settings.find_one({"key": "mandal_settings"}) or {}
+    settings = db.db.settings.find_one({"key": "mandal_settings"}) or {
+        "mandalName": Config.MANDAL_NAME,
+        "mandalTagline": Config.MANDAL_TAGLINE
+    }
     
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
-    story = []
-    styles = getSampleStyleSheet()
+    mandal_info = {
+        "name": settings.get("mandalName", Config.MANDAL_NAME),
+        "tagline": settings.get("mandalTagline", Config.MANDAL_TAGLINE)
+    }
     
-    title_style = ParagraphStyle("T", fontName="Helvetica-Bold", fontSize=18, alignment=TA_CENTER, textColor=colors.HexColor("#800000"))
-    sub_style = ParagraphStyle("S", fontName="Helvetica", fontSize=10, alignment=TA_CENTER, textColor=colors.HexColor("#4B5563"))
-    
-    mandal_name = settings.get("mandalName", Config.MANDAL_NAME)
-    story.append(Paragraph(f"<b>{mandal_name}</b>", title_style))
-    story.append(Spacer(1, 4))
-    story.append(Paragraph(f"वार्षिक आर्थिक अहवाल (Financial Audit Statement) - {festival_year}", sub_style))
-    story.append(Spacer(1, 15))
-    
-    # KPI Box
-    kpi_data = [
-        [
-            Paragraph(f"<b>एकूण जमा (Total Income):</b><br/><font color='#16A34A' size=14><b>{format_inr(summary['totalIncome'])}</b></font>", ParagraphStyle("K1")),
-            Paragraph(f"<b>एकूण खर्च (Total Expenses):</b><br/><font color='#DC2626' size=14><b>{format_inr(summary['totalExpenses'])}</b></font>", ParagraphStyle("K2")),
-            Paragraph(f"<b>शिल्लक रक्कम (Net Balance):</b><br/><font color='#2563EB' size=14><b>{format_inr(summary['currentBalance'])}</b></font>", ParagraphStyle("K3"))
-        ]
-    ]
-    kpi_table = Table(kpi_data, colWidths=[170, 170, 180])
-    kpi_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor("#F9FAFB")),
-        ('BOX', (0, 0), (-1, -1), 1, colors.HexColor("#D1D5DB")),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-    ]))
-    story.append(kpi_table)
-    story.append(Spacer(1, 20))
-    
-    # Expense Breakdown Table
-    story.append(Paragraph("<b>खर्च प्रवर्ग विश्लेषण (Expense Categories)</b>", ParagraphStyle("H2", fontName="Helvetica-Bold", fontSize=12)))
-    story.append(Spacer(1, 6))
-    
-    exp_rows = [["प्रवर्ग (Category)", "खर्च संख्या (Entries)", "रक्कम (Amount)"]]
-    for item in summary["expenseByCategory"]:
-        exp_rows.append([item["category"], str(item["count"]), format_inr(item["amount"])])
-        
-    if len(exp_rows) == 1:
-        exp_rows.append(["कोणताही खर्च नाही", "0", "₹0.00"])
-        
-    exp_table = Table(exp_rows, colWidths=[240, 130, 150])
-    exp_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#800000")),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('ALIGN', (2, 0), (2, -1), 'RIGHT'),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor("#E5E7EB")),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-    ]))
-    story.append(exp_table)
-    story.append(Spacer(1, 30))
-    
-    # Signatures
-    sig_data = [
-        [
-            Paragraph("_____________________<br/><b>अध्यक्ष (President)</b>", ParagraphStyle("P1", alignment=TA_CENTER)),
-            Paragraph("_____________________<br/><b>कार्यवाह (Secretary)</b>", ParagraphStyle("P2", alignment=TA_CENTER)),
-            Paragraph("_____________________<br/><b>खजिनदार (Treasurer)</b>", ParagraphStyle("P3", alignment=TA_CENTER))
-        ]
-    ]
-    sig_table = Table(sig_data, colWidths=[170, 170, 180])
-    story.append(sig_table)
-    
-    doc.build(story)
-    buffer.seek(0)
+    pdf_bytes = generate_financial_report_pdf(summary, mandal_info, festival_year)
     
     return send_file(
-        buffer,
+        io.BytesIO(pdf_bytes),
         mimetype="application/pdf",
         as_attachment=True,
         download_name=f"AMGM_Financial_Statement_{festival_year}.pdf"
+    )
+
+@reports_bp.route("/ledger-pdf", methods=["GET"])
+@token_required
+@role_required("super_admin", "treasurer")
+def download_ledger_pdf():
+    festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
+    settings = db.db.settings.find_one({"key": "mandal_settings"}) or {
+        "mandalName": Config.MANDAL_NAME,
+        "mandalTagline": Config.MANDAL_TAGLINE
+    }
+    
+    # Fetch all incomes and expenses for festival year
+    incomes = list(db.db.income.find({"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}))
+    expenses = list(db.db.expenses.find({"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}))
+    
+    items = []
+    for inc in incomes:
+        items.append({
+            "type": "income",
+            "isIncome": True,
+            "amount": float(inc.get("amount", 0)),
+            "personName": inc.get("source") or inc.get("donorName") or "देणगीदार",
+            "category": inc.get("category", "वर्गणी"),
+            "receiptNumber": inc.get("receiptNumber", ""),
+            "date": inc.get("date") or inc.get("createdAt"),
+            "dateDay": str(inc.get("date") or inc.get("createdAt") or "")[:10]
+        })
+    for exp in expenses:
+        items.append({
+            "type": "expense",
+            "isIncome": False,
+            "amount": float(exp.get("amount", 0)),
+            "personName": exp.get("vendor") or "खर्च",
+            "category": exp.get("category", "इतर"),
+            "billNumber": exp.get("billNumber", ""),
+            "receiptNumber": "",
+            "date": exp.get("date") or exp.get("createdAt"),
+            "dateDay": str(exp.get("date") or exp.get("createdAt") or "")[:10]
+        })
+        
+    def get_sort_key(item):
+        d = item.get("date")
+        if isinstance(d, datetime.datetime):
+            return d.timestamp()
+        if isinstance(d, str):
+            try:
+                return datetime.datetime.fromisoformat(d.replace("Z", "+00:00")).timestamp()
+            except Exception:
+                return 0
+        return 0
+        
+    items.sort(key=get_sort_key, reverse=True)
+    
+    mandal_info = {
+        "name": settings.get("mandalName", Config.MANDAL_NAME),
+        "tagline": settings.get("mandalTagline", Config.MANDAL_TAGLINE)
+    }
+    
+    pdf_bytes = generate_ledger_pdf(items, mandal_info, festival_year)
+    
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"AMGM_General_Ledger_{festival_year}.pdf"
     )

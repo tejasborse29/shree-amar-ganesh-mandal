@@ -6,16 +6,17 @@ import Skeleton from '../../components/common/Skeleton';
 
 const LedgerPage = () => {
   const { config, activeFestival } = useConfig();
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
 
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [downloading, setDownloading] = useState(false);
 
   const fetchLedger = async () => {
     setLoading(true);
     try {
       const year = activeFestival?.festivalYear || 2026;
-      const res = await api.get(`/transactions?year=${year}&type=all&limit=100`);
+      const res = await api.get(`/transactions?year=${year}&type=all&limit=200`);
       if (res.success) {
         // Reverse array to calculate running balance chronologically (oldest to newest)
         const sortedOldest = [...(res.transactions || [])].reverse();
@@ -45,11 +46,48 @@ const LedgerPage = () => {
     fetchLedger();
   }, [activeFestival]);
 
+  const handleDownloadLedgerPDF = async () => {
+    setDownloading(true);
+    try {
+      const year = activeFestival?.festivalYear || 2026;
+      const token = localStorage.getItem('amgm_auth_token');
+      
+      const response = await fetch(`/api/reports/ledger-pdf?year=${year}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('PDF तयार करता आली नाही');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `AMGM_General_Ledger_${year}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      showSuccess('नोंदवही PDF यशस्वीरीत्या डाउनलोड झाली!');
+    } catch (err) {
+      showError(err.message || 'PDF डाउनलोड करताना त्रुटी आली');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div style={{ maxWidth: '960px', margin: '0 auto' }}>
       
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+      {/* Header & Actions */}
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1C1917' }}>
             📜 नोंदवही व खतावणी (General Ledger)
@@ -59,64 +97,74 @@ const LedgerPage = () => {
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={() => window.print()} className="btn btn-outline btn-sm">
-            🖨️ नोंदवही प्रिंट करा
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleDownloadLedgerPDF}
+            disabled={downloading}
+            className="btn btn-primary btn-sm"
+            style={{ fontWeight: 700 }}
+          >
+            <span>📥</span> {downloading ? 'PDF तयार होत आहे...' : 'PDF नोंदवही डाउनलोड करा'}
+          </button>
+          <button onClick={handlePrint} className="btn btn-outline btn-sm">
+            <span>🖨️</span> प्रिंट
           </button>
         </div>
       </div>
 
-      {/* Ledger Table */}
-      {loading ? (
-        <Skeleton height="250px" borderRadius="16px" />
-      ) : entries.length === 0 ? (
-        <div className="amgm-card" style={{ padding: '3rem', textAlign: 'center', color: '#78716C' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📜</div>
-          <h4>नोंदवहीत अजून कोणत्याही नोंदी नाहीत</h4>
-        </div>
-      ) : (
-        <div className="amgm-card" style={{ padding: '0', overflowX: 'auto' }}>
-          <table className="admin-table" style={{ width: '100%', minWidth: '700px' }}>
-            <thead>
-              <tr style={{ background: '#FAFAF9', borderBottom: '2px solid #E7E5E4' }}>
-                <th style={{ padding: '0.85rem 1rem' }}>दिनांक</th>
-                <th style={{ padding: '0.85rem 1rem' }}>तपशील / खतावणी</th>
-                <th style={{ padding: '0.85rem 1rem' }}>पावती / बिल क्र.</th>
-                <th style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#16A34A' }}>जमा (Credit ₹)</th>
-                <th style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#DC2626' }}>खर्च (Debit ₹)</th>
-                <th style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#2563EB' }}>शिल्लक (Balance ₹)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((item, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid #F5F5F4' }}>
-                  <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', color: '#78716C' }}>
-                    {item.dateDay}
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem' }}>
-                    <strong style={{ color: '#1C1917', fontSize: '0.9rem' }}>{item.personName}</strong>
-                    <div style={{ fontSize: '0.75rem', color: '#78716C' }}>
-                      {item.category} • {item.notes || item.paymentMode}
-                    </div>
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', fontWeight: 600, color: '#800000' }}>
-                    {item.receiptNumber || item.billNumber || '-'}
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 700, color: item.credit > 0 ? '#16A34A' : '#A8A29E' }}>
-                    {item.credit > 0 ? `+₹${item.credit.toLocaleString('en-IN')}` : '-'}
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 700, color: item.debit > 0 ? '#DC2626' : '#A8A29E' }}>
-                    {item.debit > 0 ? `-₹${item.debit.toLocaleString('en-IN')}` : '-'}
-                  </td>
-                  <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 800, color: '#2563EB', fontSize: '0.95rem' }}>
-                    ₹ {item.balance.toLocaleString('en-IN')}
-                  </td>
+      {/* Ledger Table Container */}
+      <div id="ledger-printable-area">
+        {loading ? (
+          <Skeleton height="250px" borderRadius="16px" />
+        ) : entries.length === 0 ? (
+          <div className="amgm-card" style={{ padding: '3rem', textAlign: 'center', color: '#78716C' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📜</div>
+            <h4>नोंदवहीत अजून कोणत्याही नोंदी नाहीत</h4>
+          </div>
+        ) : (
+          <div className="amgm-card" style={{ padding: '0', overflowX: 'auto', border: '1px solid #E7E5E4' }}>
+            <table className="admin-table" style={{ width: '100%', minWidth: '700px', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#800000', color: '#FFFFFF' }}>
+                  <th style={{ padding: '0.85rem 1rem', textAlign: 'left', color: '#FFFFFF', fontWeight: 700 }}>दिनांक</th>
+                  <th style={{ padding: '0.85rem 1rem', textAlign: 'left', color: '#FFFFFF', fontWeight: 700 }}>तपशील / खतावणी</th>
+                  <th style={{ padding: '0.85rem 1rem', textAlign: 'left', color: '#FFFFFF', fontWeight: 700 }}>पावती / बिल क्र.</th>
+                  <th style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#86EFAC', fontWeight: 700 }}>जमा (Credit ₹)</th>
+                  <th style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#FCA5A5', fontWeight: 700 }}>खर्च (Debit ₹)</th>
+                  <th style={{ padding: '0.85rem 1rem', textAlign: 'right', color: '#93C5FD', fontWeight: 700 }}>शिल्लक (Balance ₹)</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {entries.map((item, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid #F5F5F4', background: idx % 2 === 0 ? '#FFFFFF' : '#FAFAF9' }}>
+                    <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', color: '#78716C', whiteSpace: 'nowrap' }}>
+                      {item.dateDay}
+                    </td>
+                    <td style={{ padding: '0.85rem 1rem' }}>
+                      <strong style={{ color: '#1C1917', fontSize: '0.9rem' }}>{item.personName}</strong>
+                      <div style={{ fontSize: '0.75rem', color: '#78716C' }}>
+                        {item.category} • {item.notes || item.paymentMode}
+                      </div>
+                    </td>
+                    <td style={{ padding: '0.85rem 1rem', fontSize: '0.85rem', fontWeight: 700, color: '#800000', whiteSpace: 'nowrap' }}>
+                      {item.receiptNumber || item.billNumber || '-'}
+                    </td>
+                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 700, color: item.credit > 0 ? '#16A34A' : '#A8A29E' }}>
+                      {item.credit > 0 ? `+₹${item.credit.toLocaleString('en-IN')}` : '-'}
+                    </td>
+                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 700, color: item.debit > 0 ? '#DC2626' : '#A8A29E' }}>
+                      {item.debit > 0 ? `-₹${item.debit.toLocaleString('en-IN')}` : '-'}
+                    </td>
+                    <td style={{ padding: '0.85rem 1rem', textAlign: 'right', fontWeight: 800, color: '#2563EB', fontSize: '0.95rem' }}>
+                      ₹ {item.balance.toLocaleString('en-IN')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
     </div>
   );
