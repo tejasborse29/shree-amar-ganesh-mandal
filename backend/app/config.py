@@ -11,7 +11,7 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES_HOURS = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES_HOURS", 24))
     
     # MongoDB
-    MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017/shree_amar_ganesh_db")
+    MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://amarganesh11:amarganesh11@cluster0.wmuzdt1.mongodb.net/shree_amar_ganesh_db?retryWrites=true&w=majority&appName=Cluster0")
     DB_NAME = os.getenv("DB_NAME", "shree_amar_ganesh_db")
     
     # Uploads

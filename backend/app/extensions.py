@@ -16,7 +16,7 @@ class Database:
         db_name = app.config.get("DB_NAME", Config.DB_NAME)
         
         try:
-            self.client = MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+            self.client = MongoClient(mongo_uri, serverSelectionTimeoutMS=15000, connectTimeoutMS=15000)
             # Test connection
             self.client.admin.command('ping')
             self.db = self.client[db_name]
