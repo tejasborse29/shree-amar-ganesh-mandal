@@ -13,4 +13,6 @@ services:
       - key: JWT_SECRET_KEY
         value: AMGM_JWT_SECRET_TOKEN_AUTH_2026_SECURE_SHA256_KEY
       - key: MONGO_URI
-        sync: false
+        value: mongodb+srv://amarganesh11:amarganesh11@cluster0.wmuzdt1.mongodb.net/shree_amar_ganesh_db?retryWrites=true&w=majority&appName=Cluster0
+      - key: DB_NAME
+        value: shree_amar_ganesh_db
