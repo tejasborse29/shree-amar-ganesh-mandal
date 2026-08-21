@@ -8,6 +8,7 @@ from app.utils.helpers import serialize_docs
 dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
 
 @dashboard_bp.route("/summary", methods=["GET"])
+@dashboard_bp.route("/stats", methods=["GET"])
 @token_required
 def get_dashboard_summary():
     festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
