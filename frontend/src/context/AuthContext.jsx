@@ -19,15 +19,19 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Validate session on mount
     const verifyUser = async () => {
-      if (token) {
+      const savedToken = localStorage.getItem('amgm_auth_token');
+      if (savedToken) {
         try {
           const res = await api.get('/auth/me');
           if (res.success && res.user) {
             setUser(res.user);
             localStorage.setItem('amgm_user', JSON.stringify(res.user));
           }
-        } catch {
-          logout();
+        } catch (err) {
+          // If token expired or invalid, clear and logout
+          if (err.response?.status === 401 || (err.message && err.message.includes('401'))) {
+            logout();
+          }
         }
       }
       setLoading(false);

@@ -33,36 +33,62 @@ def token_required(f):
         
         token = parts[1]
         decoded = decode_jwt_token(token)
-        if "error" in decoded:
+        if not decoded or "error" in decoded or "sub" not in decoded:
+            err_msg = decoded.get("error", "Invalid token") if isinstance(decoded, dict) else "Invalid token"
             return jsonify({
                 "success": False,
-                "message": f"टोकन त्रुटी: {decoded['error']} (Session expired, please login again)",
+                "message": f"टोकन त्रुटी: {err_msg} (Session expired, please login again)",
                 "error_code": "TOKEN_INVALID"
             }), 401
         
         # Load user from db to ensure active status
         try:
-            user = db.db.users.find_one({"_id": ObjectId(decoded["sub"])})
-            if not user or not user.get("isActive", True):
-                return jsonify({
-                    "success": False,
-                    "message": "वापरकर्ता निष्क्रिय किंवा अस्तित्वात नाही (User deactivated)",
-                    "error_code": "USER_INACTIVE"
-                }), 403
+            database = db.get_db()
+            user = None
+            if database is not None:
+                try:
+                    user = database.users.find_one({"_id": ObjectId(decoded["sub"])})
+                except Exception:
+                    user = database.users.find_one({"username": decoded.get("username")})
+            
+            # If user found in database
+            if user:
+                if not user.get("isActive", True):
+                    return jsonify({
+                        "success": False,
+                        "message": "वापरकर्ता निष्क्रिय करण्यात आला आहे (User deactivated)",
+                        "error_code": "USER_INACTIVE"
+                    }), 403
+                
+                user_id = str(user["_id"])
+                user_info = {
+                    "id": user_id,
+                    "username": user.get("username", decoded.get("username")),
+                    "name": user.get("name", decoded.get("name", "User")),
+                    "role": user.get("role", decoded.get("role", "volunteer")),
+                    "department": user.get("department", decoded.get("department", "General")),
+                    "mobile": user.get("mobile", "")
+                }
+            else:
+                # Fallback to token payload if db is temporarily reconnecting
+                user_id = str(decoded.get("sub", ""))
+                user_info = {
+                    "id": user_id,
+                    "username": decoded.get("username", "user"),
+                    "name": decoded.get("name", "User"),
+                    "role": decoded.get("role", "volunteer"),
+                    "department": decoded.get("department", "General"),
+                    "mobile": decoded.get("mobile", "")
+                }
             
             # Attach user to Flask context g
-            g.current_user = {
-                "id": str(user["_id"]),
-                "username": user.get("username"),
-                "name": user.get("name"),
-                "role": user.get("role", "volunteer"),
-                "department": user.get("department", "General"),
-                "mobile": user.get("mobile", "")
-            }
+            g.user_id = user_id
+            g.user = user
+            g.current_user = user_info
         except Exception as e:
             return jsonify({
                 "success": False,
-                "message": "प्रमाणीकरणात त्रुटी आली (Database lookup error)",
+                "message": f"प्रमाणीकरणात त्रुटी आली: {str(e)}",
                 "error_code": "AUTH_DB_ERROR"
             }), 500
             
@@ -87,7 +113,7 @@ def role_required(*allowed_roles):
             if allowed_roles and user_role not in allowed_roles:
                 return jsonify({
                     "success": False,
-                    "message": "या कृतीसाठी आपल्याकडे परवानगी नाही (Insufficient permissions for role: " + user_role + ")",
+                    "message": "या कृतीसाठी आपल्याकडे परवानगी नाही (Insufficient permissions for role: " + str(user_role) + ")",
                     "error_code": "FORBIDDEN"
                 }), 403
                 

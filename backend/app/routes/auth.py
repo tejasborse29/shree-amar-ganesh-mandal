@@ -158,15 +158,7 @@ def login():
 @auth_bp.route("/me", methods=["GET"])
 @token_required
 def get_current_user():
-    database = db.get_db()
-    if database is None:
-        return jsonify({"success": False, "message": "डेटाबेस उपलब्ध नाही"}), 503
-        
-    user = database.users.find_one({"_id": ObjectId(g.user_id)})
-    if not user:
-        return jsonify({"success": False, "message": "वापरकर्ता सापडला नाही"}), 404
-        
     return jsonify({
         "success": True,
-        "user": serialize_doc(user)
+        "user": g.current_user
     }), 200
