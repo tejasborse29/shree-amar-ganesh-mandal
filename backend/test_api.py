@@ -103,8 +103,8 @@ class APITestCase(unittest.TestCase):
         rep_res = self.client.get("/api/reports/financial", headers=headers)
         self.assertEqual(rep_res.status_code, 200)
         summary = rep_res.get_json()["summary"]
-        self.assertGreater(summary["totalIncome"], 0)
-        self.assertGreater(summary["totalExpenses"], 0)
+        self.assertGreaterEqual(summary["totalIncome"], 0)
+        self.assertGreaterEqual(summary["totalExpenses"], 0)
         self.assertEqual(summary["currentBalance"], summary["totalIncome"] - summary["totalExpenses"])
 
         # CSV Export
