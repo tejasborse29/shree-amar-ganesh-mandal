@@ -9,7 +9,7 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
     
     # Enable CORS for frontend
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+    CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers=["Content-Type", "Authorization", "Accept"], methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"])
     
     # Initialize DB
     db.init_app(app)

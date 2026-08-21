@@ -1,6 +1,7 @@
 import datetime
 import jwt
 import bcrypt
+import certifi
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from app.config import Config
@@ -16,7 +17,14 @@ class Database:
         db_name = app.config.get("DB_NAME", Config.DB_NAME)
         
         try:
-            self.client = MongoClient(mongo_uri, serverSelectionTimeoutMS=15000, connectTimeoutMS=15000)
+            ca = certifi.where()
+            self.client = MongoClient(
+                mongo_uri,
+                tls=True,
+                tlsCAFile=ca,
+                serverSelectionTimeoutMS=10000,
+                connectTimeoutMS=10000
+            )
             # Test connection
             self.client.admin.command('ping')
             self.db = self.client[db_name]
@@ -24,10 +32,25 @@ class Database:
             app.logger.info(f"Connected to MongoDB: {db_name}")
             self.create_indexes()
         except Exception as e:
-            app.logger.error(f"MongoDB connection failed: {e}")
-            self.is_connected = False
-            # Still initialize db handle so operations can fail gracefully or fallback
-            self.db = self.client[db_name] if self.client else None
+            app.logger.error(f"MongoDB primary connection failed: {e}")
+            try:
+                # Fallback connection without strict TLS CA for cloud container environments
+                self.client = MongoClient(
+                    mongo_uri,
+                    tls=True,
+                    tlsAllowInvalidCertificates=True,
+                    serverSelectionTimeoutMS=10000,
+                    connectTimeoutMS=10000
+                )
+                self.client.admin.command('ping')
+                self.db = self.client[db_name]
+                self.is_connected = True
+                app.logger.info(f"Connected to MongoDB via fallback TLS: {db_name}")
+                self.create_indexes()
+            except Exception as e2:
+                app.logger.error(f"MongoDB fallback connection also failed: {e2}")
+                self.is_connected = False
+                self.db = self.client[db_name] if self.client else None
 
     def create_indexes(self):
         if self.db is None:
