@@ -70,11 +70,12 @@ def create_app(config_class=Config):
     # Healthcheck
     @app.route("/api/health")
     def health_check():
+        database = db.get_db()
         return jsonify({
             "status": "healthy",
             "mandal": Config.MANDAL_NAME,
             "festivalYear": Config.DEFAULT_FESTIVAL_YEAR,
-            "dbConnected": db.is_connected
+            "dbConnected": database is not None and db.is_connected
         }), 200
 
     # Custom Error Handlers

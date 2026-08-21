@@ -11,46 +11,61 @@ class Database:
         self.client = None
         self.db = None
         self.is_connected = False
+        self.mongo_uri = None
+        self.db_name = None
 
     def init_app(self, app):
-        mongo_uri = app.config.get("MONGO_URI", Config.MONGO_URI)
-        db_name = app.config.get("DB_NAME", Config.DB_NAME)
-        
+        self.mongo_uri = app.config.get("MONGO_URI", Config.MONGO_URI)
+        self.db_name = app.config.get("DB_NAME", Config.DB_NAME)
+        self.connect()
+
+    def connect(self):
+        if not self.mongo_uri:
+            self.mongo_uri = Config.MONGO_URI
+        if not self.db_name:
+            self.db_name = Config.DB_NAME
+            
         try:
             ca = certifi.where()
             self.client = MongoClient(
-                mongo_uri,
+                self.mongo_uri,
                 tls=True,
                 tlsCAFile=ca,
-                serverSelectionTimeoutMS=10000,
-                connectTimeoutMS=10000
+                serverSelectionTimeoutMS=8000,
+                connectTimeoutMS=8000
             )
-            # Test connection
             self.client.admin.command('ping')
-            self.db = self.client[db_name]
+            self.db = self.client[self.db_name]
             self.is_connected = True
-            app.logger.info(f"Connected to MongoDB: {db_name}")
             self.create_indexes()
-        except Exception as e:
-            app.logger.error(f"MongoDB primary connection failed: {e}")
+            return self.db
+        except Exception:
             try:
-                # Fallback connection without strict TLS CA for cloud container environments
                 self.client = MongoClient(
-                    mongo_uri,
+                    self.mongo_uri,
                     tls=True,
                     tlsAllowInvalidCertificates=True,
-                    serverSelectionTimeoutMS=10000,
-                    connectTimeoutMS=10000
+                    serverSelectionTimeoutMS=8000,
+                    connectTimeoutMS=8000
                 )
                 self.client.admin.command('ping')
-                self.db = self.client[db_name]
+                self.db = self.client[self.db_name]
                 self.is_connected = True
-                app.logger.info(f"Connected to MongoDB via fallback TLS: {db_name}")
                 self.create_indexes()
-            except Exception as e2:
-                app.logger.error(f"MongoDB fallback connection also failed: {e2}")
+                return self.db
+            except Exception:
                 self.is_connected = False
-                self.db = self.client[db_name] if self.client else None
+                self.db = self.client[self.db_name] if self.client else None
+                return self.db
+
+    def get_db(self):
+        if self.db is None or not self.is_connected:
+            return self.connect()
+        try:
+            self.client.admin.command('ping')
+            return self.db
+        except Exception:
+            return self.connect()
 
     def create_indexes(self):
         if self.db is None:
