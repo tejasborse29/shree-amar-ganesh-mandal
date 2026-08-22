@@ -95,9 +95,6 @@ const HomePage = () => {
               <Link to="/about" className="btn btn-outline-gold btn-lg">
                 ℹ️ मंडळाचा इतिहास व कार्य
               </Link>
-              <Link to="/committee/login" className="btn btn-saffron btn-lg">
-                🔐 समिती व्यवस्थापन Login
-              </Link>
             </div>
 
             {/* Dynamic Live Countdown Box */}

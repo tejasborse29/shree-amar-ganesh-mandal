@@ -67,15 +67,9 @@ const Navbar = () => {
 
           {/* Committee Login & Mobile Toggle */}
           <div className="header-actions">
-            {isAuthenticated ? (
-              <Link to="/admin/dashboard" className="btn btn-primary btn-sm">
-                📊 व्यवस्थापन पॅनल
-              </Link>
-            ) : (
-              <Link to="/committee/login" className="committee-login-btn desktop-only">
-                <span>🔐</span> समिती Login
-              </Link>
-            )}
+            <Link to="/committee/login" className="committee-login-btn desktop-only">
+              <span>🔐</span> समिती Login
+            </Link>
 
             <button
               className="mobile-menu-toggle"
@@ -117,15 +111,9 @@ const Navbar = () => {
           </ul>
 
           <div className="drawer-footer">
-            {isAuthenticated ? (
-              <Link to="/admin/dashboard" className="btn btn-primary" style={{ width: '100%' }} onClick={closeMobile}>
-                📊 व्यवस्थापन पॅनल ({user?.name})
-              </Link>
-            ) : (
-              <Link to="/committee/login" className="btn btn-outline" style={{ width: '100%' }} onClick={closeMobile}>
-                🔐 समिती Login
-              </Link>
-            )}
+            <Link to="/committee/login" className="btn btn-outline" style={{ width: '100%' }} onClick={closeMobile}>
+              🔐 समिती Login
+            </Link>
           </div>
         </div>
       </div>

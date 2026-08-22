@@ -12,8 +12,10 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-# Register Mukta TrueType Fonts (Complete bilingual support for Marathi Devanagari + English Latin + Rupee symbol)
+# Register Noto Sans Devanagari & Mukta TrueType Fonts (Crystal clear Marathi Devanagari + English Latin + Rupee symbol)
 FONTS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "fonts")
+NOTO_REGULAR = os.path.join(FONTS_DIR, "NotoSansDevanagari-Regular.ttf")
+NOTO_BOLD = os.path.join(FONTS_DIR, "NotoSansDevanagari-Bold.ttf")
 MUKTA_REGULAR = os.path.join(FONTS_DIR, "Mukta-Regular.ttf")
 MUKTA_BOLD = os.path.join(FONTS_DIR, "Mukta-Bold.ttf")
 
@@ -21,14 +23,20 @@ FONT_REGULAR = "Helvetica"
 FONT_BOLD = "Helvetica-Bold"
 
 try:
-    if os.path.exists(MUKTA_REGULAR) and os.path.exists(MUKTA_BOLD):
+    if os.path.exists(NOTO_REGULAR) and os.path.exists(NOTO_BOLD):
+        pdfmetrics.registerFont(TTFont("Devanagari", NOTO_REGULAR))
+        pdfmetrics.registerFont(TTFont("Devanagari-Bold", NOTO_BOLD))
+        FONT_REGULAR = "Devanagari"
+        FONT_BOLD = "Devanagari-Bold"
+        print("[OK] Registered NotoSansDevanagari font for PDF generation.")
+    elif os.path.exists(MUKTA_REGULAR) and os.path.exists(MUKTA_BOLD):
         pdfmetrics.registerFont(TTFont("Mukta", MUKTA_REGULAR))
         pdfmetrics.registerFont(TTFont("Mukta-Bold", MUKTA_BOLD))
         FONT_REGULAR = "Mukta"
         FONT_BOLD = "Mukta-Bold"
-        print("[OK] Registered Mukta bilingual font for PDF generation.")
+        print("[OK] Registered Mukta font for PDF generation.")
 except Exception as e:
-    print(f"[WARN] Could not register Mukta font, falling back: {e}")
+    print(f"[WARN] Could not register Devanagari font, falling back: {e}")
 
 def sanitize_text(text) -> str:
     """Normalizes Unicode text to NFC to ensure Marathi glyphs render without splitting."""
