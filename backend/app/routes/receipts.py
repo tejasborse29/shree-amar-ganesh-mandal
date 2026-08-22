@@ -135,3 +135,30 @@ def download_receipt_pdf(id):
         )
     except Exception as e:
         return jsonify({"success": False, "message": f"PDF तयार करताना त्रुटी आली: {str(e)}"}), 500
+
+@receipts_bp.route("/<id>", methods=["DELETE"])
+@token_required
+@role_required("super_admin")
+def delete_receipt(id):
+    database = db.get_db()
+    if database is None:
+        return jsonify({"success": False, "message": "डेटाबेस उपलब्ध नाही"}), 503
+        
+    query = {"_id": ObjectId(id)} if ObjectId.is_valid(id) else {"receiptNumber": id}
+    receipt = database.receipts.find_one(query)
+    if not receipt:
+        return jsonify({"success": False, "message": "पावती आढळली नाही"}), 404
+        
+    rc_no = receipt.get("receiptNumber")
+    database.income.delete_many({"receiptNumber": rc_no})
+    database.receipts.delete_one(query)
+    
+    log_audit_action(
+        user_info=g.current_user,
+        action="RECEIPT_DELETED",
+        target_type="receipt",
+        target_id=rc_no,
+        details={"receiptNumber": rc_no, "donorName": receipt.get("donorName"), "amount": receipt.get("amount")}
+    )
+    return jsonify({"success": True, "message": f"पावती क्र. {rc_no} कायमची हटवण्यात आली आहे."}), 200
+

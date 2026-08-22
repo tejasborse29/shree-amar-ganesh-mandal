@@ -6,6 +6,7 @@ import { useToast } from '../../context/ToastContext';
 import Skeleton from '../../components/common/Skeleton';
 import Modal from '../../components/common/Modal';
 import PrintableReceipt from '../../components/common/PrintableReceipt';
+import { downloadReceiptPDF } from '../../utils/downloadHelper';
 
 const TransactionsPage = () => {
   const { user, hasRole } = useAuth();
@@ -98,6 +99,22 @@ const TransactionsPage = () => {
       showError(err.message || 'नोंद रद्द करताना त्रुटी आली');
     } finally {
       setReversing(false);
+    }
+  };
+
+  const handleDeleteTransaction = async (txn) => {
+    if (!window.confirm(`तुम्हाला नक्की ही नोंद कायमची हटवायची आहे का? (डेटाबेसमधून कायमची नष्ट होईल)`)) {
+      return;
+    }
+    try {
+      const res = await api.delete(`/transactions/${txn.id}?type=${txn.type}`);
+      if (res.success) {
+        showSuccess(res.message || 'नोंद कायमची हटवली गेली.');
+        setDetailModalOpen(false);
+        fetchTransactions();
+      }
+    } catch (err) {
+      showError(err.message);
     }
   };
 
@@ -330,14 +347,13 @@ const TransactionsPage = () => {
               )}
 
               {selectedTxn.receiptNumber && (
-                <a
-                  href={`/api/receipts/${selectedTxn.receiptNumber}/pdf`}
-                  download
+                <button
+                  onClick={() => downloadReceiptPDF(selectedTxn.receiptNumber, `Receipt_${selectedTxn.receiptNumber}.pdf`)}
                   className="btn btn-outline"
-                  style={{ width: '100%', textAlign: 'center', textDecoration: 'none' }}
+                  style={{ width: '100%', textAlign: 'center' }}
                 >
                   📥 अधिकृत PDF पावती डाउनलोड करा
-                </a>
+                </button>
               )}
 
               {hasRole(['super_admin', 'treasurer']) && selectedTxn.status !== 'CANCELLED' && (
@@ -348,6 +364,16 @@ const TransactionsPage = () => {
                   style={{ color: '#DC2626', width: '100%' }}
                 >
                   {reversing ? 'रद्द होत आहे...' : '⚠️ ही नोंद रद्द करा (Reverse / Cancel)'}
+                </button>
+              )}
+
+              {hasRole(['super_admin']) && (
+                <button
+                  onClick={() => handleDeleteTransaction(selectedTxn)}
+                  className="btn btn-ghost"
+                  style={{ color: '#991B1B', width: '100%' }}
+                >
+                  🗑️ ही नोंद कायमची हटवा (Delete Permanently)
                 </button>
               )}
             </div>

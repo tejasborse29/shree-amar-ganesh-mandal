@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useConfig } from '../../context/ConfigContext';
 import Skeleton from '../../components/common/Skeleton';
+import { downloadReceiptPDF } from '../../utils/downloadHelper';
 
 const ReceiptVerifyPage = () => {
   const { receiptNumber } = useParams();
@@ -127,14 +128,12 @@ const ReceiptVerifyPage = () => {
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-              <a
-                href={`/api/receipts/${receipt.receiptNumber}/pdf`}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                onClick={() => downloadReceiptPDF(receipt.receiptNumber, `Receipt_${receipt.receiptNumber}.pdf`)}
                 className="btn btn-gold btn-sm"
               >
                 📥 अधिकृत PDF डाउनलोड करा
-              </a>
+              </button>
               <Link to="/" className="btn btn-outline btn-sm">
                 मुख्यपृष्ठ
               </Link>

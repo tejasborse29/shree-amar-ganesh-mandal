@@ -3,6 +3,7 @@ import api from '../../services/api';
 import { useConfig } from '../../context/ConfigContext';
 import { useToast } from '../../context/ToastContext';
 import Skeleton from '../../components/common/Skeleton';
+import { downloadLedgerPDF } from '../../utils/downloadHelper';
 
 const LedgerPage = () => {
   const { config, activeFestival } = useConfig();
@@ -50,27 +51,7 @@ const LedgerPage = () => {
     setDownloading(true);
     try {
       const year = activeFestival?.festivalYear || 2026;
-      const token = localStorage.getItem('amgm_auth_token');
-      
-      const response = await fetch(`/api/reports/ledger-pdf?year=${year}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('PDF तयार करता आली नाही');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `AMGM_General_Ledger_${year}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      await downloadLedgerPDF(year, `AMGM_General_Ledger_${year}.pdf`);
       showSuccess('नोंदवही PDF यशस्वीरीत्या डाउनलोड झाली!');
     } catch (err) {
       showError(err.message || 'PDF डाउनलोड करताना त्रुटी आली');

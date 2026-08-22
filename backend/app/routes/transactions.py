@@ -268,3 +268,46 @@ def reverse_transaction(id):
         "success": True,
         "message": f"नोंद यशस्वीरीत्या रद्द (Reversed) करण्यात आली आहे."
     }), 200
+
+@transactions_bp.route("/<id>", methods=["DELETE"])
+@token_required
+@role_required("super_admin")
+def delete_transaction(id):
+    """
+    Permanently deletes a cancelled or erroneous transaction and its receipt (Super Admin only).
+    """
+    txn_type = request.args.get("type", "").lower()
+    database = db.get_db()
+    if database is None:
+        return jsonify({"success": False, "message": "डेटाबेस उपलब्ध नाही"}), 503
+
+    if txn_type == "expense":
+        target = database.expenses.find_one({"_id": ObjectId(id)}) if ObjectId.is_valid(id) else None
+        if target:
+            database.expenses.delete_one({"_id": target["_id"]})
+        else:
+            return jsonify({"success": False, "message": "खर्च नोंद सापडली नाही"}), 404
+    else:
+        target = database.income.find_one({"_id": ObjectId(id)}) if ObjectId.is_valid(id) else None
+        if target:
+            rc_no = target.get("receiptNumber")
+            if rc_no:
+                database.receipts.delete_many({"receiptNumber": rc_no})
+            database.income.delete_one({"_id": target["_id"]})
+        else:
+            rc = database.receipts.find_one({"_id": ObjectId(id)}) if ObjectId.is_valid(id) else None
+            if rc:
+                database.income.delete_many({"receiptNumber": rc.get("receiptNumber")})
+                database.receipts.delete_one({"_id": rc["_id"]})
+            else:
+                return jsonify({"success": False, "message": "नोंद सापडली नाही"}), 404
+                
+    log_audit_action(
+        user_info=g.current_user,
+        action="TRANSACTION_DELETED",
+        target_type="transaction",
+        target_id=str(id),
+        details={"txnId": str(id), "type": txn_type}
+    )
+    return jsonify({"success": True, "message": "नोंद कायमची हटवण्यात आली आहे."}), 200
+

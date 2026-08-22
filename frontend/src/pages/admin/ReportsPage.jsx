@@ -4,11 +4,11 @@ import { useConfig } from '../../context/ConfigContext';
 import { useToast } from '../../context/ToastContext';
 import Skeleton from '../../components/common/Skeleton';
 import Modal from '../../components/common/Modal';
+import { downloadReportPDF, downloadReportCSV } from '../../utils/downloadHelper';
 
 const ReportsPage = () => {
-  const { config, activeFestival } = useConfig();
-  const { showError } = useToast();
-
+  const { showSuccess, showError } = useToast();
+  const { activeFestival } = useConfig();
   const [period, setPeriod] = useState('month'); // today, 7days, 30days, month, custom
   const [groupBy, setGroupBy] = useState('head'); // head, worker, mode
   const [reportData, setReportData] = useState(null);
@@ -34,14 +34,24 @@ const ReportsPage = () => {
     fetchReports();
   }, [period, activeFestival]);
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     const year = activeFestival?.festivalYear || 2026;
-    window.open(`/api/reports/download-pdf?year=${year}`, '_blank');
+    try {
+      await downloadReportPDF(year, `AMGM_Financial_Report_${year}.pdf`);
+      showSuccess('अहवाल PDF डाउनलोड झाली!');
+    } catch (e) {
+      showError('PDF डाउनलोड करताना त्रुटी आली.');
+    }
   };
 
-  const handleDownloadCSV = () => {
+  const handleDownloadCSV = async () => {
     const year = activeFestival?.festivalYear || 2026;
-    window.open(`/api/reports/export-csv?year=${year}`, '_blank');
+    try {
+      await downloadReportCSV(year, `AMGM_Transactions_${year}.csv`);
+      showSuccess('CSV फाईल डाउनलोड झाली!');
+    } catch (e) {
+      showError('CSV डाउनलोड करताना त्रुटी आली.');
+    }
   };
 
   return (

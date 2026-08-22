@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useConfig } from '../../context/ConfigContext';
 import { useToast } from '../../context/ToastContext';
+import { downloadReceiptPDF } from '../../utils/downloadHelper';
 
 const PrintableReceipt = ({ receipt, onClose }) => {
   const { config } = useConfig();
@@ -29,29 +30,10 @@ const PrintableReceipt = ({ receipt, onClose }) => {
     setDownloading(true);
     try {
       const receiptId = receipt.receiptNumber || receipt._id || receipt.id;
-      const pdfUrl = `/api/receipts/${receiptId}/pdf`;
-      const token = localStorage.getItem('amgm_auth_token');
-      
-      const response = await fetch(pdfUrl, {
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-      });
-      
-      if (!response.ok) {
-        throw new Error('PDF तयार करता आली नाही');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `Receipt_${receiptNo}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      await downloadReceiptPDF(receiptId, `Receipt_${receiptNo}.pdf`);
       showSuccess('पावती PDF डाउनलोड झाली!');
     } catch (e) {
-      window.open(`/api/receipts/${receipt.receiptNumber || receipt._id || receipt.id}/pdf`, '_blank');
+      showError('PDF डाउनलोड करताना त्रुटी आली.');
     } finally {
       setDownloading(false);
     }

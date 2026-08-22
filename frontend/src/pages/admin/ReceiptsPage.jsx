@@ -6,6 +6,7 @@ import Skeleton from '../../components/common/Skeleton';
 import EmptyState from '../../components/common/EmptyState';
 import Modal from '../../components/common/Modal';
 import PrintableReceipt from '../../components/common/PrintableReceipt';
+import { downloadReceiptPDF } from '../../utils/downloadHelper';
 
 const ReceiptsPage = () => {
   const { showSuccess, showError } = useToast();
@@ -105,6 +106,21 @@ const ReceiptsPage = () => {
       showError(err.message);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteReceipt = async (r) => {
+    if (!window.confirm(`तुम्हाला नक्की पावती क्र. "${r.receiptNumber}" कायमची हटवायची आहे का? (ही क्रिया पूर्ववत करता येणार नाही)`)) {
+      return;
+    }
+    try {
+      const res = await api.delete(`/receipts/${r.id || r._id}`);
+      if (res.success) {
+        showSuccess(res.message || 'पावती कायमची हटवली गेली.');
+        fetchReceipts();
+      }
+    } catch (err) {
+      showError(err.message);
     }
   };
 
@@ -208,15 +224,13 @@ const ReceiptsPage = () => {
                         >
                           👁️ पहा
                         </button>
-                        <a
-                          href={`/api/receipts/${r.id || r._id}/pdf`}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
+                          onClick={() => downloadReceiptPDF(r.receiptNumber || r.id || r._id, `Receipt_${r.receiptNumber}.pdf`)}
                           className="btn btn-ghost btn-sm"
                           title="PDF डाउनलोड"
                         >
                           📥 PDF
-                        </a>
+                        </button>
                         {!isCancelled && hasRole(['super_admin', 'treasurer']) && (
                           <button
                             onClick={() => { setCancelModal(r); setCancelReason(''); }}
@@ -225,6 +239,16 @@ const ReceiptsPage = () => {
                             title="पावती रद्द करा"
                           >
                             ❌ रद्द
+                          </button>
+                        )}
+                        {hasRole(['super_admin']) && (
+                          <button
+                            onClick={() => handleDeleteReceipt(r)}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: '#991B1B' }}
+                            title="पावती कायमची हटवा (Delete)"
+                          >
+                            🗑️ हटवा
                           </button>
                         )}
                       </div>
@@ -265,11 +289,12 @@ const ReceiptsPage = () => {
 
       {/* Create Receipt Modal */}
       <Modal isOpen={createModal} onClose={() => setCreateModal(false)} title="नवीन पावती फाडा">
-        <form onSubmit={handleCreateReceipt}>
+        <form onSubmit={handleCreateReceipt} autoComplete="off">
           <div className="form-group">
             <label className="form-label">देणगीदाराचे नाव (Donor Name) *</label>
             <input
               type="text"
+              autoComplete="off"
               value={form.donorName}
               onChange={(e) => setForm({ ...form, donorName: e.target.value })}
               className="form-input"
@@ -280,13 +305,14 @@ const ReceiptsPage = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label className="form-label">मोबाईल नंबर (Mobile) *</label>
+              <label className="form-label">देणगीदाराचा मोबाईल नंबर (Donor Mobile) *</label>
               <input
                 type="tel"
+                autoComplete="off"
                 value={form.donorMobile}
                 onChange={(e) => setForm({ ...form, donorMobile: e.target.value })}
                 className="form-input"
-                placeholder="१० अंकी मोबाईल नंबर"
+                placeholder="देणगीदाराचा १० अंकी नंबर"
                 required
               />
             </div>

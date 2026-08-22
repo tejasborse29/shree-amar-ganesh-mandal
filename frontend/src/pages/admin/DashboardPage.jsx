@@ -223,7 +223,13 @@ const DashboardPage = () => {
         ) : (
           <div>
             {recentReceipts.map((r) => (
-              <div key={r.id || r._id} className="txn-card-item">
+              <div 
+                key={r.id || r._id} 
+                className="txn-card-item"
+                style={{ cursor: 'pointer' }}
+                onClick={() => { setCreatedReceipt(r); setQuickReceiptModal(true); }}
+                title="पावती पहा / प्रिंट करा"
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                   <div className="txn-icon-box income">
                     🤝
@@ -236,6 +242,7 @@ const DashboardPage = () => {
                       <span>वर्गणी</span>
                       <span>•</span>
                       <span>{String(r.createdAt || '').slice(0, 10)}</span>
+                      {r.receiptNumber && <span>• {r.receiptNumber}</span>}
                     </div>
                   </div>
                 </div>
@@ -329,12 +336,13 @@ const DashboardPage = () => {
             onClose={() => { setQuickReceiptModal(false); setCreatedReceipt(null); }}
           />
         ) : (
-          <form onSubmit={handleCreateReceipt}>
+          <form onSubmit={handleCreateReceipt} autoComplete="off">
             <div className="form-group mb-3">
               <label className="form-label">देणगीदाराचे पूर्ण नाव (Full Name) *</label>
               <input
                 type="text"
                 required
+                autoComplete="off"
                 value={receiptForm.donorName}
                 onChange={(e) => setReceiptForm({ ...receiptForm, donorName: e.target.value })}
                 className="form-input"
@@ -344,16 +352,17 @@ const DashboardPage = () => {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
               <div className="form-group mb-3">
-                <label className="form-label">मोबाईल नंबर (Mobile) *</label>
+                <label className="form-label">देणगीदाराचा मोबाईल नंबर (Donor Mobile) *</label>
                 <input
                   type="tel"
                   required
                   pattern="[0-9]{10}"
                   inputMode="numeric"
+                  autoComplete="off"
                   value={receiptForm.donorMobile}
                   onChange={(e) => setReceiptForm({ ...receiptForm, donorMobile: e.target.value })}
                   className="form-input"
-                  placeholder="98XXXXXXXX"
+                  placeholder="देणगीदाराचा १० अंकी नंबर"
                 />
               </div>
 

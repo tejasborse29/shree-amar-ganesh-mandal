@@ -22,7 +22,7 @@ def ensure_default_users():
                     "passwordHash": hash_password("Admin@AMGM2026"),
                     "role": "super_admin",
                     "department": "सर्वसाधारण प्रशासन (Super Admin)",
-                    "mobile": "9322957150",
+                    "mobile": "9876543210",
                     "email": "admin@shreeamarganesh.org",
                     "isActive": True,
                     "createdAt": now
@@ -96,11 +96,9 @@ def login():
         ]
     })
     
-    # If not found and identifier is 9322957150 or admin, also check admin account
-    if not user and identifier in ["admin", "9322957150", "9876543210"]:
-        user = database.users.find_one({"role": "super_admin"})
-        if user and not user.get("mobile"):
-            database.users.update_one({"_id": user["_id"]}, {"$set": {"mobile": "9322957150"}})
+    # Fallback lookup for admin username
+    if not user and identifier.lower() == "admin":
+        user = database.users.find_one({"username": "admin"}) or database.users.find_one({"role": "super_admin"})
     
     if not user:
         return jsonify({
