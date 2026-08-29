@@ -22,6 +22,13 @@ def get_next_receipt_number(festival_year: int = 2026) -> str:
     seq = counter.get("seq", 1)
     return f"{prefix}-{festival_year}-{seq:06d}"
 
+DEVANAGARI_TO_ASCII = str.maketrans("०१२३४५६७८९", "0123456789")
+
+def normalize_digits(text: str) -> str:
+    if not text:
+        return ""
+    return str(text).translate(DEVANAGARI_TO_ASCII).strip()
+
 def create_receipt_record(data: dict, current_user: dict) -> dict:
     """
     Creates a new digital receipt, associates with member/donor, creates verified income record.
@@ -35,7 +42,7 @@ def create_receipt_record(data: dict, current_user: dict) -> dict:
     now = datetime.datetime.now(datetime.timezone.utc)
     
     donor_name = data.get("donorName", "").strip()
-    donor_mobile = data.get("donorMobile", "").strip()
+    donor_mobile = normalize_digits(data.get("donorMobile", ""))
     donor_address = data.get("donorAddress", "").strip()
     donor_email = data.get("donorEmail", "").strip()
     payment_mode = data.get("paymentMode", "cash").lower()

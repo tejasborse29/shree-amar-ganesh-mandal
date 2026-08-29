@@ -66,8 +66,8 @@ const ReceiptsPage = () => {
 
   const handleCreateReceipt = async (e) => {
     e.preventDefault();
-    if (!form.donorName || !form.donorMobile || !form.amount) {
-      showError('कृपया आवश्यक माहिती भरा.');
+    if (!form.donorName || !form.amount) {
+      showError('कृपया देणगीदाराचे नाव आणि रक्कम प्रविष्ट करा.');
       return;
     }
     setSubmitting(true);
@@ -305,15 +305,14 @@ const ReceiptsPage = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label className="form-label">देणगीदाराचा मोबाईल नंबर (Donor Mobile) *</label>
+              <label className="form-label">देणगीदाराचा मोबाईल नंबर (ऐच्छिक / Optional)</label>
               <input
                 type="tel"
                 autoComplete="off"
                 value={form.donorMobile}
                 onChange={(e) => setForm({ ...form, donorMobile: e.target.value })}
                 className="form-input"
-                placeholder="देणगीदाराचा १० अंकी नंबर"
-                required
+                placeholder="मोबाईल नंबर (उपलब्ध असल्यास)"
               />
             </div>
             <div className="form-group">

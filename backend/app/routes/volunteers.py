@@ -41,14 +41,22 @@ def get_volunteers():
         
     return jsonify({"success": True, "volunteers": serialize_docs(volunteers)}), 200
 
+DEVANAGARI_TO_ASCII = str.maketrans("०१२३४५६७८९", "0123456789")
+
+def normalize_digits(text: str) -> str:
+    if not text:
+        return ""
+    return str(text).translate(DEVANAGARI_TO_ASCII).strip()
+
 @volunteers_bp.route("", methods=["POST"])
 @token_required
 @role_required("super_admin")
 def add_volunteer():
     data = request.get_json() or {}
     name = data.get("name", "").strip()
-    mobile = data.get("mobile", "").strip()
-    username = data.get("username", "").strip() or mobile
+    mobile = normalize_digits(data.get("mobile", ""))
+    raw_username = data.get("username", "").strip()
+    username = normalize_digits(raw_username).lower() if raw_username else mobile
     password = data.get("password", "Volunteer@AMGM2026")
     role = data.get("role", "volunteer")
     department = data.get("department", "मंडप व स्टेज व्यवस्था (Mandap & Stage)")

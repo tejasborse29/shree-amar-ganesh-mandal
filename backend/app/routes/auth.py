@@ -65,13 +65,23 @@ def ensure_default_users():
     except Exception as e:
         print(f"Warning: ensure_default_users failed: {e}")
 
+import re
+
+DEVANAGARI_TO_ASCII = str.maketrans("०१२३४५६७८९", "0123456789")
+ASCII_TO_DEVANAGARI = str.maketrans("0123456789", "०१२३४५६७८९")
+
+def normalize_digits(text: str) -> str:
+    if not text:
+        return ""
+    return str(text).translate(DEVANAGARI_TO_ASCII).strip()
+
 @auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json() or {}
-    identifier = str(data.get("identifier", "")).strip()
+    raw_identifier = str(data.get("identifier", "")).strip()
     password = str(data.get("password", ""))
     
-    if not identifier or not password:
+    if not raw_identifier or not password:
         return jsonify({
             "success": False,
             "message": "कृपया वापरकर्तानाव/मोबाईल आणि पासवर्ड प्रविष्ट करा (Please enter credentials)"
@@ -87,17 +97,24 @@ def login():
     # Auto seed users if table is empty
     ensure_default_users()
         
-    # Find user by username, mobile, or email
-    user = database.users.find_one({
-        "$or": [
-            {"username": identifier},
-            {"mobile": identifier},
-            {"email": identifier}
-        ]
-    })
+    clean_identifier = raw_identifier.strip()
+    ascii_identifier = normalize_digits(clean_identifier)
+    devanagari_identifier = clean_identifier.translate(ASCII_TO_DEVANAGARI)
+    
+    # Robust search by case-insensitive username, mobile (ascii and devanagari), email, or name
+    query_conditions = [
+        {"username": {"$regex": f"^{re.escape(clean_identifier)}$", "$options": "i"}},
+        {"username": {"$regex": f"^{re.escape(ascii_identifier)}$", "$options": "i"}},
+        {"mobile": clean_identifier},
+        {"mobile": ascii_identifier},
+        {"mobile": devanagari_identifier},
+        {"email": {"$regex": f"^{re.escape(clean_identifier)}$", "$options": "i"}},
+        {"name": {"$regex": f"^{re.escape(clean_identifier)}$", "$options": "i"}}
+    ]
+    user = database.users.find_one({"$or": query_conditions})
     
     # Fallback lookup for admin username
-    if not user and identifier.lower() == "admin":
+    if not user and clean_identifier.lower() in ["admin", "superadmin", "super_admin"]:
         user = database.users.find_one({"username": "admin"}) or database.users.find_one({"role": "super_admin"})
     
     if not user:
@@ -138,11 +155,10 @@ def login():
     
     # Log Audit
     log_audit_action(
-        user_id=str(user["_id"]),
-        username=user.get("username", identifier),
-        role=user.get("role", "user"),
+        user_info=user_info,
         action="USER_LOGIN",
-        entity_type="auth",
+        target_type="auth",
+        target_id=str(user["_id"]),
         details={"ip": request.remote_addr, "userAgent": request.headers.get("User-Agent", "")}
     )
     

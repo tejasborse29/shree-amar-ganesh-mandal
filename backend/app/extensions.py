@@ -59,13 +59,9 @@ class Database:
                 return self.db
 
     def get_db(self):
-        if self.db is None or not self.is_connected:
-            return self.connect()
-        try:
-            self.client.admin.command('ping')
+        if self.db is not None and self.is_connected:
             return self.db
-        except Exception:
-            return self.connect()
+        return self.connect()
 
     def create_indexes(self):
         if self.db is None:

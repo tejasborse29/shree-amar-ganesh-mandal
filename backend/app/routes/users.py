@@ -18,15 +18,25 @@ def get_all_users():
     users = list(database.users.find({}, {"passwordHash": 0}).sort("createdAt", -1))
     return jsonify({"success": True, "users": serialize_docs(users)}), 200
 
+DEVANAGARI_TO_ASCII = str.maketrans("०१२३४५६७८९", "0123456789")
+
+def normalize_digits(text: str) -> str:
+    if not text:
+        return ""
+    return str(text).translate(DEVANAGARI_TO_ASCII).strip()
+
 @users_bp.route("", methods=["POST"])
 @token_required
 @role_required("super_admin")
 def create_user():
     data = request.get_json() or {}
-    username = data.get("username", "").strip()
+    raw_username = data.get("username", "").strip()
+    username = normalize_digits(raw_username).lower()
     name = data.get("name", "").strip()
     password = data.get("password", "")
     role = data.get("role", "volunteer")
+    mobile = normalize_digits(data.get("mobile", ""))
+    email = data.get("email", "").strip().lower()
     
     if not username or not name or not password:
         return jsonify({"success": False, "message": "वापरकर्तानाव, नाव आणि पासवर्ड आवश्यक आहे"}), 400
@@ -35,7 +45,7 @@ def create_user():
     if database is None:
         return jsonify({"success": False, "message": "डेटाबेस उपलब्ध नाही"}), 503
 
-    existing = database.users.find_one({"username": username})
+    existing = database.users.find_one({"$or": [{"username": username}, {"username": raw_username}]})
     if existing:
         return jsonify({"success": False, "message": "हे वापरकर्तानाव आधीच वापरात आहे"}), 409
         
@@ -43,11 +53,11 @@ def create_user():
     user_doc = {
         "username": username,
         "name": name,
-        "passwordHash": hash_password(password),
+        "passwordHash": hash_password(str(password).strip()),
         "role": role,
         "department": data.get("department", "General"),
-        "mobile": data.get("mobile", "").strip(),
-        "email": data.get("email", "").strip(),
+        "mobile": mobile,
+        "email": email,
         "isActive": True,
         "createdAt": now,
         "updatedAt": now
@@ -91,8 +101,7 @@ def update_user(id):
     if "name" in data and data["name"].strip():
         update_doc["name"] = data["name"].strip()
     if "username" in data and data["username"].strip():
-        new_username = data["username"].strip()
-        # Check uniqueness if username changed
+        new_username = normalize_digits(data["username"].strip()).lower()
         if new_username != existing_user.get("username"):
             conflict = database.users.find_one({"username": new_username, "_id": {"$ne": ObjectId(id)}})
             if conflict:
@@ -103,9 +112,9 @@ def update_user(id):
     if "department" in data:
         update_doc["department"] = data["department"]
     if "mobile" in data:
-        update_doc["mobile"] = str(data["mobile"]).strip()
+        update_doc["mobile"] = normalize_digits(data["mobile"])
     if "email" in data:
-        update_doc["email"] = str(data["email"]).strip()
+        update_doc["email"] = str(data["email"]).strip().lower()
     if "isActive" in data:
         update_doc["isActive"] = bool(data["isActive"])
         

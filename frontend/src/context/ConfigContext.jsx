@@ -3,54 +3,77 @@ import api from '../services/api';
 
 const ConfigContext = createContext(null);
 
+const DEFAULT_CONFIG = {
+  mandalName: 'श्री अमर गणेश मित्र मंडळ',
+  mandalTagline: 'भक्ती परंपरेची… व्यवस्थापन आधुनिकतेचं!',
+  festivalYear: 2026,
+  financialYear: '2026-27',
+  activeFestival: 'गणेशोत्सव',
+  sthapanaDate: '2026-08-28T09:00:00',
+  visarjanDate: '2026-09-08T18:00:00',
+  contactNumber: '+91 98765 43210',
+  email: 'contact@shreeamarganesh.org',
+  address: 'अमर गणेश चौक, शनिवार पेठ, पुणे, महाराष्ट्र - ४११ ०३०',
+  mapLocation: 'https://maps.app.goo.gl/C6AwUKT4sz5xxSyP7',
+  upiId: 'amarganesh@upi',
+  bankDetails: {
+    accountName: 'Shree Amar Ganesh Mitra Mandal',
+    accountNumber: '9876002100045890',
+    ifsc: 'MAHB0000123',
+    bankName: 'Bank of Maharashtra'
+  },
+  socialLinks: {
+    facebook: 'https://facebook.com',
+    instagram: 'https://www.instagram.com/bappa_majha_offical_17?igsh=bnMyazE3aG91aTJv',
+    youtube: 'https://youtube.com'
+  },
+  transparencyEnabled: true
+};
+
+const DEFAULT_FESTIVALS = [
+  { id: '1', name: 'गणेशोत्सव', financialYear: '2026-27', festivalYear: 2026, isActive: true },
+  { id: '2', name: 'नवरात्र', financialYear: '2026-27', festivalYear: 2026, isActive: false },
+  { id: '3', name: 'शिवजयंती', financialYear: '2026-27', festivalYear: 2027, isActive: false },
+  { id: '4', name: 'गुढीपाडवा', financialYear: '2026-27', festivalYear: 2027, isActive: false }
+];
+
 export const ConfigProvider = ({ children }) => {
-  const [config, setConfig] = useState({
-    mandalName: 'श्री अमर गणेश मित्र मंडळ',
-    mandalTagline: 'भक्ती परंपरेची… व्यवस्थापन आधुनिकतेचं!',
-    festivalYear: 2026,
-    financialYear: '2026-27',
-    activeFestival: 'गणेशोत्सव',
-    sthapanaDate: '2026-08-28T09:00:00',
-    visarjanDate: '2026-09-08T18:00:00',
-    contactNumber: '+91 98765 43210',
-    email: 'contact@shreeamarganesh.org',
-    address: 'अमर गणेश चौक, शनिवार पेठ, पुणे, महाराष्ट्र - ४११ ०३०',
-    mapLocation: 'https://maps.app.goo.gl/C6AwUKT4sz5xxSyP7',
-    upiId: 'amarganesh@upi',
-    bankDetails: {
-      accountName: 'Shree Amar Ganesh Mitra Mandal',
-      accountNumber: '9876002100045890',
-      ifsc: 'MAHB0000123',
-      bankName: 'Bank of Maharashtra'
-    },
-    socialLinks: {
-      facebook: 'https://facebook.com',
-      instagram: 'https://www.instagram.com/bappa_majha_offical_17?igsh=bnMyazE3aG91aTJv',
-      youtube: 'https://youtube.com'
-    },
-    transparencyEnabled: true
+  const [config, setConfig] = useState(() => {
+    try {
+      const cached = localStorage.getItem('amgm_cached_config');
+      return cached ? JSON.parse(cached) : DEFAULT_CONFIG;
+    } catch {
+      return DEFAULT_CONFIG;
+    }
   });
 
-  const [festivals, setFestivals] = useState([
-    { id: '1', name: 'गणेशोत्सव', financialYear: '2026-27', festivalYear: 2026, isActive: true },
-    { id: '2', name: 'नवरात्र', financialYear: '2026-27', festivalYear: 2026, isActive: false },
-    { id: '3', name: 'शिवजयंती', financialYear: '2026-27', festivalYear: 2027, isActive: false },
-    { id: '4', name: 'गुढीपाडवा', financialYear: '2026-27', festivalYear: 2027, isActive: false }
-  ]);
-  const [activeFestival, setActiveFestival] = useState({
-    name: 'गणेशोत्सव',
-    financialYear: '2026-27',
-    festivalYear: 2026
+  const [festivals, setFestivals] = useState(() => {
+    try {
+      const cached = localStorage.getItem('amgm_cached_festivals');
+      return cached ? JSON.parse(cached) : DEFAULT_FESTIVALS;
+    } catch {
+      return DEFAULT_FESTIVALS;
+    }
+  });
+
+  const [activeFestival, setActiveFestival] = useState(() => {
+    try {
+      const cached = localStorage.getItem('amgm_cached_active_festival');
+      return cached ? JSON.parse(cached) : { name: 'गणेशोत्सव', financialYear: '2026-27', festivalYear: 2026 };
+    } catch {
+      return { name: 'गणेशोत्सव', financialYear: '2026-27', festivalYear: 2026 };
+    }
   });
 
   const [announcements, setAnnouncements] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const fetchConfig = async () => {
     try {
       const res = await api.get('/public/config');
       if (res.success && res.config) {
         setConfig(res.config);
+        localStorage.setItem('amgm_cached_config', JSON.stringify(res.config));
       }
       
       const annRes = await api.get('/public/announcements');
@@ -65,16 +88,18 @@ export const ConfigProvider = ({ children }) => {
           const festRes = await api.get('/festivals');
           if (festRes.success && festRes.festivals) {
             setFestivals(festRes.festivals);
+            localStorage.setItem('amgm_cached_festivals', JSON.stringify(festRes.festivals));
             if (festRes.activeFestival) {
               setActiveFestival(festRes.activeFestival);
+              localStorage.setItem('amgm_cached_active_festival', JSON.stringify(festRes.activeFestival));
             }
           }
-        } catch (err) {
-          // fallback to defaults
+        } catch {
+          // Keep cached
         }
       }
-    } catch (e) {
-      console.warn('Config fetch warning (using defaults):', e);
+    } catch (err) {
+      console.warn('Silent config sync notice:', err);
     } finally {
       setLoading(false);
     }
@@ -82,35 +107,28 @@ export const ConfigProvider = ({ children }) => {
 
   const switchActiveFestival = async (festival) => {
     try {
-      const res = await api.patch('/festivals/active', { festivalId: festival.id || festival._id, name: festival.name });
-      if (res.success && res.activeFestival) {
-        setActiveFestival(res.activeFestival);
-        setFestivals(prev => prev.map(f => ({
-          ...f,
-          isActive: (f.id || f._id) === (res.activeFestival.id || res.activeFestival._id)
-        })));
-        return { success: true, message: res.message };
-      }
-    } catch (err) {
-      // Local state update fallback
       setActiveFestival(festival);
-      setFestivals(prev => prev.map(f => ({
-        ...f,
-        isActive: f.name === festival.name
-      })));
-      return { success: true };
+      localStorage.setItem('amgm_cached_active_festival', JSON.stringify(festival));
+      const res = await api.post(`/festivals/${festival.id || festival._id}/set-active`);
+      if (res.success) {
+        setFestivals(res.festivals || festivals);
+      }
+    } catch (e) {
+      console.warn('Silent festival switch notice:', e);
     }
   };
 
-  const createNewFestival = async (festivalData) => {
+  const updateMandalConfig = async (newConfig) => {
     try {
-      const res = await api.post('/festivals', festivalData);
-      if (res.success && res.festival) {
-        setFestivals(prev => [res.festival, ...prev]);
-        return { success: true, festival: res.festival };
+      const res = await api.put('/settings/config', newConfig);
+      if (res.success && res.config) {
+        setConfig(res.config);
+        localStorage.setItem('amgm_cached_config', JSON.stringify(res.config));
+        return { success: true, message: res.message };
       }
+      return { success: false, message: 'सेटिंग्ज अद्यतनित होऊ शकल्या नाहीत.' };
     } catch (err) {
-      throw err;
+      return { success: false, message: err.message || 'त्रुटी आली.' };
     }
   };
 
@@ -125,9 +143,9 @@ export const ConfigProvider = ({ children }) => {
       activeFestival,
       announcements,
       loading,
+      refreshConfig: fetchConfig,
       switchActiveFestival,
-      createNewFestival,
-      refetchConfig: fetchConfig
+      updateMandalConfig
     }}>
       {children}
     </ConfigContext.Provider>
