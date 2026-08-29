@@ -54,7 +54,7 @@ def get_expenses():
 
 @expenses_bp.route("", methods=["POST"])
 @token_required
-@role_required("super_admin", "treasurer")
+@role_required("super_admin", "treasurer", "receipt_manager", "event_manager", "volunteer")
 def add_expense():
     data = request.get_json() or {}
     amount = float(data.get("amount", 0))

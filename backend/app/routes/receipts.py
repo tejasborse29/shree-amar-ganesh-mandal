@@ -69,7 +69,7 @@ def get_receipt(id):
 
 @receipts_bp.route("", methods=["POST"])
 @token_required
-@role_required("super_admin", "treasurer", "receipt_manager")
+@role_required("super_admin", "treasurer", "receipt_manager", "event_manager", "volunteer")
 def create_receipt():
     data = request.get_json() or {}
     try:

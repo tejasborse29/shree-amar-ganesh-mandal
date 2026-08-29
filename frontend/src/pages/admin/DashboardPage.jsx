@@ -188,12 +188,12 @@ const DashboardPage = () => {
 
       {/* Desktop Quick Action Buttons */}
       <div className="desktop-only" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        {hasRole(['super_admin', 'treasurer', 'receipt_manager']) && (
+        {hasRole(['super_admin', 'treasurer', 'receipt_manager', 'event_manager', 'volunteer']) && (
           <button onClick={() => { setCreatedReceipt(null); setQuickReceiptModal(true); }} className="btn btn-action-green" style={{ flex: 1, padding: '0.85rem' }}>
             <span>➕</span> नवीन वर्गणी / पावती
           </button>
         )}
-        {hasRole(['super_admin', 'treasurer']) && (
+        {hasRole(['super_admin', 'treasurer', 'receipt_manager', 'event_manager', 'volunteer']) && (
           <button onClick={() => setQuickExpenseModal(true)} className="btn btn-action-red" style={{ flex: 1, padding: '0.85rem' }}>
             <span>💸</span> नवीन खर्च नोंदवा
           </button>
@@ -303,7 +303,7 @@ const DashboardPage = () => {
 
       {/* 5. STICKY MOBILE FLOATING ACTION BAR (+ जमा, - खर्च) (Matching Screenshot 4) */}
       <div className="sticky-action-bar">
-        {hasRole(['super_admin', 'treasurer', 'receipt_manager']) ? (
+        {hasRole(['super_admin', 'treasurer', 'receipt_manager', 'event_manager', 'volunteer']) ? (
           <button
             onClick={() => { setCreatedReceipt(null); setQuickReceiptModal(true); }}
             className="btn-action-green"
@@ -312,7 +312,7 @@ const DashboardPage = () => {
           </button>
         ) : <div />}
 
-        {hasRole(['super_admin', 'treasurer']) ? (
+        {hasRole(['super_admin', 'treasurer', 'receipt_manager', 'event_manager', 'volunteer']) ? (
           <button
             onClick={() => setQuickExpenseModal(true)}
             className="btn-action-red"

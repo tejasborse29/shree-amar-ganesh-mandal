@@ -113,14 +113,14 @@ function App() {
                   <Route path="receipts" element={<ReceiptsPage />} />
                   <Route path="members" element={<MembersPage />} />
                   <Route path="income" element={
-                    <ProtectedRoute allowedRoles={['super_admin', 'treasurer']}>
+                    <ProtectedRoute allowedRoles={['super_admin', 'treasurer', 'receipt_manager', 'event_manager', 'volunteer']}>
                       <IncomePage />
                     </ProtectedRoute>
                   } />
                   
                   {/* Expenses */}
                   <Route path="expenses" element={
-                    <ProtectedRoute allowedRoles={['super_admin', 'treasurer']}>
+                    <ProtectedRoute allowedRoles={['super_admin', 'treasurer', 'receipt_manager', 'event_manager', 'volunteer']}>
                       <ExpensesPage />
                     </ProtectedRoute>
                   } />
