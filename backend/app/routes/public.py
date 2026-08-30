@@ -19,6 +19,8 @@ def get_public_config():
         "mandalName": settings.get("mandalName", Config.MANDAL_NAME),
         "mandalTagline": settings.get("mandalTagline", Config.MANDAL_TAGLINE),
         "festivalYear": settings.get("festivalYear", Config.DEFAULT_FESTIVAL_YEAR),
+        "financialYear": settings.get("financialYear", "2026-27"),
+        "activeFestival": settings.get("activeFestival", "गणेशोत्सव"),
         "sthapanaDate": settings.get("sthapanaDate", "2026-08-28T09:00:00"), # 2026 Ganesh Chaturthi
         "visarjanDate": settings.get("visarjanDate", "2026-09-08T18:00:00"),
         "contactNumber": settings.get("contactNumber", "+91 98765 43210"),

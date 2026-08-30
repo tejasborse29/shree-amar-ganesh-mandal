@@ -44,6 +44,8 @@ def update_settings():
         "mandalName": data.get("mandalName", Config.MANDAL_NAME),
         "mandalTagline": data.get("mandalTagline", Config.MANDAL_TAGLINE),
         "festivalYear": int(data.get("festivalYear", Config.DEFAULT_FESTIVAL_YEAR)),
+        "financialYear": data.get("financialYear", "2026-27"),
+        "activeFestival": data.get("activeFestival", "गणेशोत्सव"),
         "receiptPrefix": data.get("receiptPrefix", Config.MANDAL_RECEIPT_PREFIX).upper(),
         "sthapanaDate": data.get("sthapanaDate", "2026-08-28T09:00:00"),
         "visarjanDate": data.get("visarjanDate", "2026-09-08T18:00:00"),

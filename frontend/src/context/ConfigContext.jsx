@@ -109,24 +109,46 @@ export const ConfigProvider = ({ children }) => {
     try {
       setActiveFestival(festival);
       localStorage.setItem('amgm_cached_active_festival', JSON.stringify(festival));
-      const res = await api.post(`/festivals/${festival.id || festival._id}/set-active`);
+      const res = await api.post(`/festivals/${festival.id || festival._id}/set-active`, {
+        festivalId: festival.id || festival._id,
+        name: festival.name
+      });
       if (res.success) {
-        setFestivals(res.festivals || festivals);
+        if (res.festivals) {
+          setFestivals(res.festivals);
+          localStorage.setItem('amgm_cached_festivals', JSON.stringify(res.festivals));
+        }
+        if (res.activeFestival) {
+          setActiveFestival(res.activeFestival);
+          localStorage.setItem('amgm_cached_active_festival', JSON.stringify(res.activeFestival));
+        }
+        fetchConfig();
+        return res;
       }
     } catch (e) {
-      console.warn('Silent festival switch notice:', e);
+      console.warn('Festival switch notice:', e);
     }
+  };
+
+  const createNewFestival = async (festData) => {
+    const res = await api.post('/festivals', festData);
+    if (res.success && res.festival) {
+      const updated = res.festivals || [res.festival, ...festivals];
+      setFestivals(updated);
+      localStorage.setItem('amgm_cached_festivals', JSON.stringify(updated));
+      return { success: true, festival: res.festival, message: res.message };
+    }
+    return { success: false, message: res.message || 'उत्सव जोडताना त्रुटी आली' };
   };
 
   const updateMandalConfig = async (newConfig) => {
     try {
-      const res = await api.put('/settings/config', newConfig);
-      if (res.success && res.config) {
-        setConfig(res.config);
-        localStorage.setItem('amgm_cached_config', JSON.stringify(res.config));
-        return { success: true, message: res.message };
+      const res = await api.put('/settings', newConfig);
+      if (res.success) {
+        await fetchConfig();
+        return { success: true, message: res.message || 'सेटिंग्ज यशस्वीपणे अद्यतनित झाल्या.' };
       }
-      return { success: false, message: 'सेटिंग्ज अद्यतनित होऊ शकल्या नाहीत.' };
+      return { success: false, message: res.message || 'सेटिंग्ज अद्यतनित होऊ शकल्या नाहीत.' };
     } catch (err) {
       return { success: false, message: err.message || 'त्रुटी आली.' };
     }
@@ -144,7 +166,9 @@ export const ConfigProvider = ({ children }) => {
       announcements,
       loading,
       refreshConfig: fetchConfig,
+      refetchConfig: fetchConfig,
       switchActiveFestival,
+      createNewFestival,
       updateMandalConfig
     }}>
       {children}

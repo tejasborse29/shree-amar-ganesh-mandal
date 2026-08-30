@@ -34,15 +34,20 @@ const FestivalModal = ({ isOpen, onClose }) => {
     }
     setSubmitting(true);
     try {
-      const res = await createNewFestival({
+      const payload = {
         name: newFestName.trim(),
         financialYear: newFestYear.trim(),
         festivalYear: parseInt(newFestYear.split('-')[0]) || 2026
-      });
-      if (res?.success) {
+      };
+      const res = await createNewFestival(payload);
+      if (res?.success && res.festival) {
         showSuccess(`'${newFestName}' उत्सव यशस्वीपणे जोडला गेला!`);
         setShowAddForm(false);
         setNewFestName('');
+        // Automatically activate the newly created festival
+        await switchActiveFestival(res.festival);
+      } else {
+        showError(res?.message || 'उत्सव जोडता आला नाही');
       }
     } catch (err) {
       showError(err.message || 'उत्सव जोडता आला नाही');

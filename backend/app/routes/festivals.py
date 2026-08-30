@@ -80,11 +80,12 @@ def get_festivals():
         "activeFestival": serialize_doc(active_festival)
     }), 200
 
-@festivals_bp.route("/active", methods=["PATCH"])
+@festivals_bp.route("/active", methods=["POST", "PATCH"])
+@festivals_bp.route("/<id>/set-active", methods=["POST", "PATCH"])
 @token_required
-def set_active_festival():
+def set_active_festival(id=None):
     data = request.get_json() or {}
-    festival_id = data.get("festivalId")
+    festival_id = id or data.get("festivalId")
     festival_name = data.get("name")
     
     query = {}
@@ -92,7 +93,10 @@ def set_active_festival():
         query["_id"] = ObjectId(festival_id)
     elif festival_name:
         query["name"] = festival_name
-    else:
+    elif id:
+        query["_id"] = ObjectId(id) if ObjectId.is_valid(id) else None
+        
+    if not query or not any(query.values()):
         return jsonify({"success": False, "message": "उत्सव आयडी किंवा नाव आवश्यक आहे"}), 400
         
     target = db.db.festivals.find_one(query)
@@ -114,22 +118,24 @@ def set_active_festival():
     
     log_audit_action(
         action="FESTIVAL_SWITCH",
-        target_entity="festivals",
-        entity_id=str(target["_id"]),
+        target_type="festivals",
+        target_id=str(target["_id"]),
         details={"festival": target["name"], "financialYear": target.get("financialYear")},
         user_info=g.current_user
     )
     
+    festivals = list(db.db.festivals.find().sort("festivalYear", -1))
     target["isActive"] = True
     return jsonify({
         "success": True,
         "message": f"सध्याचा उत्सव '{target['name']} ({target.get('financialYear', '2026-27')})' सेट करण्यात आला आहे.",
-        "activeFestival": serialize_doc(target)
+        "activeFestival": serialize_doc(target),
+        "festivals": serialize_docs(festivals)
     }), 200
 
 @festivals_bp.route("", methods=["POST"])
 @token_required
-@role_required("super_admin", "treasurer", "event_manager")
+@role_required("super_admin", "treasurer", "event_manager", "receipt_manager", "volunteer")
 def create_festival():
     data = request.get_json() or {}
     name = data.get("name", "").strip()
@@ -163,14 +169,16 @@ def create_festival():
     
     log_audit_action(
         action="FESTIVAL_CREATE",
-        target_entity="festivals",
-        entity_id=str(res.inserted_id),
+        target_type="festivals",
+        target_id=str(res.inserted_id),
         details={"name": name, "financialYear": financial_year},
         user_info=g.current_user
     )
     
+    festivals = list(db.db.festivals.find().sort("festivalYear", -1))
     return jsonify({
         "success": True,
         "message": f"नवीन उत्सव '{name}' यशस्वीरीत्या जोडला गेला आहे!",
-        "festival": serialize_doc(new_fest)
+        "festival": serialize_doc(new_fest),
+        "festivals": serialize_docs(festivals)
     }), 201
