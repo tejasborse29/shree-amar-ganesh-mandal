@@ -89,10 +89,13 @@ def create_receipt_record(data: dict, current_user: dict) -> dict:
             res = db.db.members.insert_one(new_mem)
             member_id = str(res.inserted_id)
             
+    festival_name = data.get("festivalName", "गणेशोत्सव")
+    
     # 2. Create Receipt Document
     receipt_doc = {
         "receiptNumber": receipt_number,
         "festivalYear": festival_year,
+        "festivalName": festival_name,
         "donorName": donor_name,
         "donorMobile": donor_mobile,
         "donorAddress": donor_address,
@@ -103,9 +106,9 @@ def create_receipt_record(data: dict, current_user: dict) -> dict:
         "transactionRef": transaction_ref,
         "notes": notes,
         "status": "ACTIVE",
-        "collectedBy": current_user.get("id"),
-        "collectedByUsername": current_user.get("username"),
-        "collectedByName": current_user.get("name"),
+        "issuedBy": current_user.get("id"),
+        "issuedByName": current_user.get("name"),
+        "issuedByRole": current_user.get("role"),
         "createdAt": now,
         "updatedAt": now
     }
@@ -117,6 +120,7 @@ def create_receipt_record(data: dict, current_user: dict) -> dict:
     # 3. Create Corresponding Income Entry (Server-Authoritative)
     income_doc = {
         "festivalYear": festival_year,
+        "festivalName": festival_name,
         "date": now,
         "category": "Vargani",
         "amount": amount,

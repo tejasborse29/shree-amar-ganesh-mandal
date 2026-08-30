@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useConfig } from '../../context/ConfigContext';
@@ -7,6 +7,8 @@ import Skeleton from '../../components/common/Skeleton';
 const SettingsPage = () => {
   const { showSuccess, showError } = useToast();
   const { refetchConfig, updateMandalConfig } = useConfig();
+  const qrFileInputRef = useRef(null);
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -24,6 +26,7 @@ const SettingsPage = () => {
     address: 'अमर गणेश चौक, शनिवार पेठ, पुणे, महाराष्ट्र - ४११ ०३०',
     mapLocation: 'https://maps.app.goo.gl/C6AwUKT4sz5xxSyP7',
     upiId: 'amarganesh@upi',
+    qrCodeUrl: '/assets/Bank QR Code.jpeg',
     accountName: 'Shree Amar Ganesh Mitra Mandal',
     accountNumber: '9876002100045890',
     ifsc: 'MAHB0000123',
@@ -44,6 +47,7 @@ const SettingsPage = () => {
         setSettings((prev) => ({
           ...prev,
           ...res.settings,
+          qrCodeUrl: res.settings.qrCodeUrl || prev.qrCodeUrl,
           socialLinks: {
             ...prev.socialLinks,
             ...(res.settings.socialLinks || {})
@@ -80,6 +84,49 @@ const SettingsPage = () => {
     }));
   };
 
+  const handleQRFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showError('कृपया वैध फोटो निवडा (JPG, PNG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 800;
+
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
+        setSettings((prev) => ({
+          ...prev,
+          qrCodeUrl: compressedBase64
+        }));
+        showSuccess('नवीन QR कोड फोटो यशस्वीपणे निवडला गेला!');
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
@@ -107,7 +154,7 @@ const SettingsPage = () => {
           ⚙️ मंडळ प्रणाली व माहिती व्यवस्थापन (Mandal Settings)
         </h2>
         <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
-          मंडळाचे नाव, उत्सव वर्ष, मंडप पत्ता, संपर्क, बँक तपशील व सोशल मीडिया लिंक्स थेट संपादित करा
+          मंडळाचे नाव, उत्सव वर्ष, मंडप पत्ता, संपर्क, बँक QR कोड व सोशल मीडिया लिंक्स थेट संपादित करा
         </p>
       </div>
 
@@ -311,13 +358,13 @@ const SettingsPage = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '2px solid #FDE047', paddingBottom: '0.5rem', margin: '2rem 0 1.25rem' }}>
             <span style={{ fontSize: '1.25rem' }}>🏦</span>
             <h3 style={{ fontSize: '1.15rem', color: 'var(--color-primary)', fontWeight: 800, margin: 0 }}>
-              ५. बँक व UPI वर्गणी तपशील (Bank & UPI Details)
+              ५. बँक व UPI वर्गणी तपशील आणि QR कोड (Bank & QR Code)
             </h3>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
             <div className="form-group">
-              <label className="form-label">UPI ID (QR देणगीसाठी)</label>
+              <label className="form-label">UPI ID (देणगी / वर्गणीसाठी) *</label>
               <input
                 type="text"
                 name="upiId"
@@ -325,6 +372,7 @@ const SettingsPage = () => {
                 onChange={handleChange}
                 className="form-input"
                 placeholder="amarganesh@upi"
+                required
               />
             </div>
             <div className="form-group">
@@ -373,6 +421,74 @@ const SettingsPage = () => {
                 className="form-input"
                 placeholder="MAHB0000123"
               />
+            </div>
+          </div>
+
+          {/* QR Code Upload & Management Box */}
+          <div style={{ background: '#FFFDF5', border: '1.5px dashed #D4AF37', borderRadius: '14px', padding: '1.25rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontWeight: 800, color: 'var(--color-primary)', fontSize: '0.95rem' }}>
+                📱 बँक / UPI QR कोड फोटो (Bank QR Code Image)
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettings((prev) => ({ ...prev, qrCodeUrl: '/assets/Bank QR Code.jpeg' }))}
+                className="btn btn-outline btn-sm"
+                style={{ fontSize: '0.75rem' }}
+              >
+                🔄 डीफॉल्ट QR कोड वापरा
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '1.25rem', alignItems: 'center' }}>
+              {/* QR Preview */}
+              <div style={{ textAlign: 'center' }}>
+                <img
+                  src={settings.qrCodeUrl || '/assets/Bank QR Code.jpeg'}
+                  alt="Bank QR Code"
+                  style={{
+                    width: '120px',
+                    height: '120px',
+                    objectFit: 'contain',
+                    border: '2px solid #E7E5E4',
+                    borderRadius: '10px',
+                    background: '#FFFFFF',
+                    padding: '4px'
+                  }}
+                />
+              </div>
+
+              {/* Upload Controls */}
+              <div>
+                <input
+                  type="file"
+                  ref={qrFileInputRef}
+                  accept="image/*"
+                  onChange={handleQRFileChange}
+                  style={{ display: 'none' }}
+                />
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => qrFileInputRef.current?.click()}
+                    className="btn btn-primary btn-sm"
+                    style={{ fontSize: '0.85rem' }}
+                  >
+                    📷 मोबाईल / संगणकामधून QR कोड अपलोड करा
+                  </button>
+                </div>
+                <div className="form-group mb-0">
+                  <input
+                    type="text"
+                    name="qrCodeUrl"
+                    value={settings.qrCodeUrl || ''}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="किंवा QR कोड फोटो URL / पाथ टाका"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 

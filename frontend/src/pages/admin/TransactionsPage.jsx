@@ -28,8 +28,9 @@ const TransactionsPage = () => {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const year = activeFestival?.festivalYear || 2026;
-      let url = `/transactions?year=${year}&type=${typeFilter}`;
+      const year = activeFestival?.name === 'सर्व उत्सव' ? 0 : (activeFestival?.festivalYear || 2026);
+      const festName = activeFestival?.name || '';
+      let url = `/transactions?year=${year}&festival=${encodeURIComponent(festName)}&type=${typeFilter}`;
       if (search.trim()) {
         url += `&search=${encodeURIComponent(search.trim())}`;
       }

@@ -22,6 +22,7 @@ def get_transactions():
     payment_mode = request.args.get("paymentMode", "").strip()
     worker = request.args.get("worker", "").strip()
     festival_year = request.args.get("year")
+    festival_name = request.args.get("festival", "").strip()
     start_date = request.args.get("startDate")
     end_date = request.args.get("endDate")
     page = int(request.args.get("page", 1))
@@ -29,8 +30,11 @@ def get_transactions():
     
     # 1. Fetch Income records
     income_query = {}
-    if festival_year:
+    if festival_name and festival_name != "सर्व उत्सव" and festival_year and int(festival_year) > 0:
+        income_query["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
+    elif festival_year and int(festival_year) > 0:
         income_query["festivalYear"] = int(festival_year)
+        
     if payment_mode:
         income_query["paymentMode"] = payment_mode.lower()
     if category:
@@ -58,7 +62,9 @@ def get_transactions():
 
     # 2. Fetch Expense records
     expense_query = {}
-    if festival_year:
+    if festival_name and festival_name != "सर्व उत्सव" and festival_year and int(festival_year) > 0:
+        expense_query["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
+    elif festival_year and int(festival_year) > 0:
         expense_query["festivalYear"] = int(festival_year)
     if payment_mode:
         expense_query["paymentMode"] = payment_mode.lower()

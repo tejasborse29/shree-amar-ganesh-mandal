@@ -54,6 +54,7 @@ def update_settings():
         "address": data.get("address", "पुणे, महाराष्ट्र"),
         "mapLocation": data.get("mapLocation", ""),
         "upiId": data.get("upiId", "amarganesh@upi"),
+        "qrCodeUrl": data.get("qrCodeUrl", "/assets/Bank QR Code.jpeg"),
         "accountName": data.get("accountName", "Shree Amar Ganesh Mitra Mandal"),
         "accountNumber": data.get("accountNumber", ""),
         "ifsc": data.get("ifsc", ""),

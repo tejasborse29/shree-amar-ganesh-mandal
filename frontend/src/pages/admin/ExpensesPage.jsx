@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
+import { useConfig } from '../../context/ConfigContext';
 import { useToast } from '../../context/ToastContext';
 import Skeleton from '../../components/common/Skeleton';
 import EmptyState from '../../components/common/EmptyState';
@@ -12,6 +13,7 @@ const EXPENSE_CATEGORIES = [
 ];
 
 const ExpensesPage = () => {
+  const { config, activeFestival } = useConfig();
   const { showSuccess, showError } = useToast();
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,9 @@ const ExpensesPage = () => {
   const fetchExpenses = async () => {
     setLoading(true);
     try {
-      let url = `/expenses?page=${page}&limit=15`;
+      const year = activeFestival?.name === 'सर्व उत्सव' ? 0 : (activeFestival?.festivalYear || 2026);
+      const festName = activeFestival?.name || '';
+      let url = `/expenses?page=${page}&limit=15&year=${year}&festival=${encodeURIComponent(festName)}`;
       if (categoryFilter) url += `&category=${categoryFilter}`;
       const res = await api.get(url);
       if (res.success) {
@@ -53,7 +57,7 @@ const ExpensesPage = () => {
 
   useEffect(() => {
     fetchExpenses();
-  }, [page, categoryFilter]);
+  }, [page, categoryFilter, activeFestival]);
 
   const handleAddExpense = async (e) => {
     e.preventDefault();
@@ -63,7 +67,12 @@ const ExpensesPage = () => {
     }
     setSubmitting(true);
     try {
-      const res = await api.post('/expenses', form);
+      const payload = {
+        ...form,
+        festivalYear: activeFestival?.festivalYear || config.festivalYear || 2026,
+        festivalName: activeFestival?.name || 'गणेशोत्सव'
+      };
+      const res = await api.post('/expenses', payload);
       if (res.success) {
         showSuccess(res.message);
         setAddModal(false);

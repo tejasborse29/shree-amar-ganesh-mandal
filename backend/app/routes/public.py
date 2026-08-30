@@ -28,6 +28,7 @@ def get_public_config():
         "address": settings.get("address", "अमर गणेश मंडळ चौक, मुख्य रस्ता, पुणे, महाराष्ट्र - ४११००१"),
         "mapLocation": settings.get("mapLocation", "https://maps.google.com"),
         "upiId": settings.get("upiId", "amarganesh@upi"),
+        "qrCodeUrl": settings.get("qrCodeUrl", "/assets/Bank QR Code.jpeg"),
         "bankDetails": {
             "accountName": settings.get("accountName", "Shree Amar Ganesh Mitra Mandal"),
             "accountNumber": settings.get("accountNumber", "XXXX-XXXX-XXXX-4589"),

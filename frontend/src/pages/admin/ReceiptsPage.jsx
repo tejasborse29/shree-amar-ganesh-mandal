@@ -72,7 +72,12 @@ const ReceiptsPage = () => {
     }
     setSubmitting(true);
     try {
-      const res = await api.post('/receipts', form);
+      const payload = {
+        ...form,
+        festivalYear: activeFestival?.festivalYear || config.festivalYear || 2026,
+        festivalName: activeFestival?.name || 'गणेशोत्सव'
+      };
+      const res = await api.post('/receipts', payload);
       if (res.success && res.receipt) {
         showSuccess(res.message);
         setCreateModal(false);

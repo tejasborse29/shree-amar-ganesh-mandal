@@ -2,10 +2,10 @@ import datetime
 from app.extensions import db
 from app.config import Config
 
-def get_financial_summary(festival_year: int = 2026, start_date=None, end_date=None) -> dict:
+def get_financial_summary(festival_year: int = 2026, start_date=None, end_date=None, festival_name: str = None) -> dict:
     """
     Returns server-authoritative financial totals and chart distributions
-    for the active festival year and optional date range.
+    for the active festival year, festival name and optional date range.
     Formula: Current Balance = Total Income - Total Expenses
     """
     if db.db is None:
@@ -27,8 +27,17 @@ def get_financial_summary(festival_year: int = 2026, start_date=None, end_date=N
         }
     
     # 1. Base Match Query
-    match_income = {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}
-    match_expense = {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}
+    match_income = {"status": {"$ne": "CANCELLED"}}
+    match_expense = {"status": {"$ne": "CANCELLED"}}
+    
+    if festival_name and festival_name == "सर्व उत्सव":
+        pass
+    elif festival_name and festival_year and int(festival_year) > 0:
+        match_income["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
+        match_expense["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
+    elif festival_year and int(festival_year) > 0:
+        match_income["festivalYear"] = int(festival_year)
+        match_expense["festivalYear"] = int(festival_year)
     
     if start_date and end_date:
         try:

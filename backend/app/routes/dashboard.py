@@ -12,25 +12,39 @@ dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
 @token_required
 def get_dashboard_summary():
     festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
+    festival_name = request.args.get("festival", "").strip()
     
     # Financial and KPI summary
-    summary = get_financial_summary(festival_year)
+    summary = get_financial_summary(festival_year, festival_name=festival_name if festival_name else None)
     
     # User's pending tasks
     user_id = g.current_user["id"]
     user_role = g.current_user["role"]
     
-    task_query = {"festivalYear": festival_year, "status": {"$in": ["Pending", "In Progress"]}}
+    task_query = {"status": {"$in": ["Pending", "In Progress"]}}
+    if festival_name and festival_name != "सर्व उत्सव" and festival_year > 0:
+        task_query["$or"] = [{"festivalName": festival_name}, {"festivalYear": festival_year}]
+    elif festival_year > 0:
+        task_query["festivalYear"] = festival_year
+
     if user_role == "volunteer":
-        task_query["$or"] = [
-            {"assignedToUserId": user_id},
-            {"assignedToUsername": g.current_user["username"]}
+        task_query["$and"] = [
+            {"$or": [
+                {"assignedToUserId": user_id},
+                {"assignedToUsername": g.current_user["username"]}
+            ]}
         ]
         
     pending_tasks = list(db.db.tasks.find(task_query).sort("dueDate", 1).limit(5))
     
     # Recent receipts for quick glance
-    recent_receipts = list(db.db.receipts.find({"festivalYear": festival_year}).sort("createdAt", -1).limit(5))
+    receipt_query = {}
+    if festival_name and festival_name != "सर्व उत्सव" and festival_year > 0:
+        receipt_query["$or"] = [{"festivalName": festival_name}, {"festivalYear": festival_year}]
+    elif festival_year > 0:
+        receipt_query["festivalYear"] = festival_year
+
+    recent_receipts = list(db.db.receipts.find(receipt_query).sort("createdAt", -1).limit(5))
     
     # Recent announcements
     recent_announcements = list(db.db.announcements.find({"active": True}).sort("createdAt", -1).limit(3))

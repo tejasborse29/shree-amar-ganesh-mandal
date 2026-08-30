@@ -23,7 +23,7 @@ const QRModal = ({ isOpen, onClose }) => {
           marginBottom: '1.25rem'
         }}>
           <img
-            src="/assets/Bank QR Code.jpeg"
+            src={config.qrCodeUrl || config.qrCodeImage || "/assets/Bank QR Code.jpeg"}
             alt="Mandal Bank QR Code"
             style={{ width: '260px', height: '260px', objectFit: 'contain', margin: '0 auto' }}
           />

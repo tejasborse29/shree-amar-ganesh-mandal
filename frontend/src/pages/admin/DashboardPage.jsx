@@ -49,8 +49,9 @@ const DashboardPage = () => {
 
   const fetchDashboard = async () => {
     try {
-      const year = activeFestival?.festivalYear || config.festivalYear || 2026;
-      const res = await api.get(`/dashboard/summary?year=${year}`);
+      const year = activeFestival?.name === 'सर्व उत्सव' ? 0 : (activeFestival?.festivalYear || config.festivalYear || 2026);
+      const festName = activeFestival?.name || '';
+      const res = await api.get(`/dashboard/summary?year=${year}&festival=${encodeURIComponent(festName)}`);
       if (res.success) {
         setData(res);
       }
@@ -75,7 +76,8 @@ const DashboardPage = () => {
     try {
       const payload = {
         ...receiptForm,
-        festivalYear: activeFestival?.festivalYear || 2026
+        festivalYear: activeFestival?.festivalYear || config.festivalYear || 2026,
+        festivalName: activeFestival?.name || 'गणेशोत्सव'
       };
       const res = await api.post('/receipts', payload);
       if (res.success && res.receipt) {
@@ -101,7 +103,8 @@ const DashboardPage = () => {
     try {
       const payload = {
         ...expenseForm,
-        festivalYear: activeFestival?.festivalYear || 2026
+        festivalYear: activeFestival?.festivalYear || config.festivalYear || 2026,
+        festivalName: activeFestival?.name || 'गणेशोत्सव'
       };
       const res = await api.post('/expenses', payload);
       if (res.success) {

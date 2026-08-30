@@ -15,11 +15,17 @@ def get_expenses():
     category = request.args.get("category")
     vendor = request.args.get("vendor")
     festival_year = request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR)
+    festival_name = request.args.get("festival", "").strip()
     search = request.args.get("search", "").strip()
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 20))
     
-    query = {"festivalYear": int(festival_year)}
+    query = {}
+    if festival_name and festival_name != "सर्व उत्सव" and int(festival_year) > 0:
+        query["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
+    elif int(festival_year) > 0:
+        query["festivalYear"] = int(festival_year)
+        
     if category:
         query["category"] = category
     if vendor:
@@ -67,9 +73,11 @@ def add_expense():
         
     now = datetime.datetime.now(datetime.timezone.utc)
     festival_year = int(data.get("festivalYear", Config.DEFAULT_FESTIVAL_YEAR))
+    festival_name = data.get("festivalName", "गणेशोत्सव")
     
     expense_doc = {
         "festivalYear": festival_year,
+        "festivalName": festival_name,
         "date": datetime.datetime.fromisoformat(data.get("date")) if data.get("date") else now,
         "category": category,
         "amount": amount,
