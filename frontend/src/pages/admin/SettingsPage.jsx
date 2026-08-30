@@ -8,6 +8,7 @@ const SettingsPage = () => {
   const { showSuccess, showError } = useToast();
   const { refetchConfig, updateMandalConfig } = useConfig();
   const qrFileInputRef = useRef(null);
+  const logoFileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -15,6 +16,7 @@ const SettingsPage = () => {
   const [settings, setSettings] = useState({
     mandalName: 'श्री अमर गणेश मित्र मंडळ',
     mandalTagline: 'भक्ती परंपरेची… व्यवस्थापन आधुनिकतेचं!',
+    logoUrl: '/assets/Mandal Logo.png',
     festivalYear: 2026,
     financialYear: '2026-27',
     activeFestival: 'गणेशोत्सव',
@@ -27,7 +29,7 @@ const SettingsPage = () => {
     mapLocation: 'https://maps.app.goo.gl/C6AwUKT4sz5xxSyP7',
     upiId: 'amarganesh@upi',
     qrCodeUrl: '/assets/Bank QR Code.jpeg',
-    accountName: 'Shree Amar Ganesh Mitra Mandal',
+    accountName: 'Shree Amar गणेश Mitra Mandal',
     accountNumber: '9876002100045890',
     ifsc: 'MAHB0000123',
     bankName: 'Bank of Maharashtra, Pune Main Branch',
@@ -47,6 +49,7 @@ const SettingsPage = () => {
         setSettings((prev) => ({
           ...prev,
           ...res.settings,
+          logoUrl: res.settings.logoUrl || prev.logoUrl,
           qrCodeUrl: res.settings.qrCodeUrl || prev.qrCodeUrl,
           socialLinks: {
             ...prev.socialLinks,
@@ -82,6 +85,49 @@ const SettingsPage = () => {
         [name]: value
       }
     }));
+  };
+
+  const handleLogoFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showError('कृपया वैध फोटो निवडा (PNG, JPG, SVG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 500;
+
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/png');
+        setSettings((prev) => ({
+          ...prev,
+          logoUrl: compressedBase64
+        }));
+        showSuccess('मंडळाचा नवीन लोगो यशस्वीपणे निवडला गेला!');
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleQRFileChange = (e) => {
@@ -133,7 +179,7 @@ const SettingsPage = () => {
     try {
       const res = await updateMandalConfig(settings);
       if (res.success) {
-        showSuccess(res.message || 'मंडळाची सर्व माहिती यशस्वीपणे अद्यतनित झाली!');
+        showSuccess(res.message || 'मंडळाची सर्व माहिती व लोगो यशस्वीपणे अद्यतनित झाले!');
         refetchConfig();
       } else {
         showError(res.message || 'त्रुटी आली.');
@@ -154,7 +200,7 @@ const SettingsPage = () => {
           ⚙️ मंडळ प्रणाली व माहिती व्यवस्थापन (Mandal Settings)
         </h2>
         <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
-          मंडळाचे नाव, उत्सव वर्ष, मंडप पत्ता, संपर्क, बँक QR कोड व सोशल मीडिया लिंक्स थेट संपादित करा
+          मंडळाचे नाव, लोगो, उत्सव वर्ष, मंडप पत्ता, संपर्क, बँक QR कोड व सोशल मीडिया लिंक्स थेट संपादित करा
         </p>
       </div>
 
@@ -165,8 +211,77 @@ const SettingsPage = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '2px solid #FDE047', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
             <span style={{ fontSize: '1.25rem' }}>🚩</span>
             <h3 style={{ fontSize: '1.15rem', color: 'var(--color-primary)', fontWeight: 800, margin: 0 }}>
-              १. मंडळाची माहिती व नाव (Mandal Identity)
+              १. मंडळाची माहिती व लोगो (Mandal Identity & Logo)
             </h3>
+          </div>
+
+          {/* Logo Upload Box */}
+          <div style={{ background: '#FFFDF5', border: '1.5px dashed #D4AF37', borderRadius: '14px', padding: '1.25rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontWeight: 800, color: 'var(--color-primary)', fontSize: '0.95rem' }}>
+                🏷️ मंडळाचा अधिकृत लोगो (Official Mandal Logo)
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettings((prev) => ({ ...prev, logoUrl: '/assets/Mandal Logo.png' }))}
+                className="btn btn-outline btn-sm"
+                style={{ fontSize: '0.75rem' }}
+              >
+                🔄 मूळ लोगो वापरा (Reset Default Logo)
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '1.25rem', alignItems: 'center' }}>
+              {/* Logo Preview */}
+              <div style={{ textAlign: 'center' }}>
+                <img
+                  src={settings.logoUrl || '/assets/Mandal Logo.png'}
+                  alt="Mandal Logo Preview"
+                  style={{
+                    width: '90px',
+                    height: '90px',
+                    objectFit: 'contain',
+                    border: '2px solid #E7E5E4',
+                    borderRadius: '50%',
+                    background: '#FFFFFF',
+                    padding: '4px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                  }}
+                />
+              </div>
+
+              {/* Upload Controls */}
+              <div>
+                <input
+                  type="file"
+                  ref={logoFileInputRef}
+                  accept="image/*"
+                  onChange={handleLogoFileChange}
+                  style={{ display: 'none' }}
+                />
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => logoFileInputRef.current?.click()}
+                    className="btn btn-primary btn-sm"
+                    style={{ fontSize: '0.85rem' }}
+                  >
+                    📷 मोबाईल / संगणकामधून नवीन लोगो अपलोड करा
+                  </button>
+                </div>
+                <div className="form-group mb-0">
+                  <input
+                    type="text"
+                    name="logoUrl"
+                    value={settings.logoUrl || ''}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="किंवा लोगो इमेज URL / पाथ टाका"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>

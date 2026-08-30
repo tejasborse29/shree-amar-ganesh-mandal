@@ -18,6 +18,7 @@ def get_public_config():
     config = {
         "mandalName": settings.get("mandalName", Config.MANDAL_NAME),
         "mandalTagline": settings.get("mandalTagline", Config.MANDAL_TAGLINE),
+        "logoUrl": settings.get("logoUrl", "/assets/Mandal Logo.png"),
         "festivalYear": settings.get("festivalYear", Config.DEFAULT_FESTIVAL_YEAR),
         "financialYear": settings.get("financialYear", "2026-27"),
         "activeFestival": settings.get("activeFestival", "गणेशोत्सव"),

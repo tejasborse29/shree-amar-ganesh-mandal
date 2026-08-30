@@ -13,7 +13,7 @@ const Footer = () => {
           {/* Brand Col */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-              <img src="/assets/Mandal Logo.png" alt="Mandal Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+              <img src={config.logoUrl || config.mandalLogo || "/assets/Mandal Logo.png"} alt="Mandal Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
               <div>
                 <h3 style={{ color: '#FDE047', fontSize: '1.2rem', fontWeight: 800 }}>{config.mandalName}</h3>
                 <span style={{ fontSize: '0.75rem', color: '#FB923C' }}>गणेशोत्सव {config.festivalYear}</span>

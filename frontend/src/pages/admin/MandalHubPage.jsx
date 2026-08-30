@@ -40,8 +40,16 @@ const MandalHubPage = () => {
       
       {/* 1. MANDAL PROFILE HEADER CARD (Matching Screenshots 1 & 2) */}
       <div className="mandal-profile-header-card">
-        <div className="mandal-avatar-circle">
-          Sa
+        <div className="mandal-avatar-circle" style={{ overflow: 'hidden', padding: (config.logoUrl || config.mandalLogo) ? 0 : undefined }}>
+          {(config.logoUrl || config.mandalLogo) ? (
+            <img
+              src={config.logoUrl || config.mandalLogo}
+              alt="Mandal Logo"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            '🚩'
+          )}
         </div>
         <h2 className="mandal-hub-title">{config.mandalName}</h2>
         <div style={{ fontSize: '0.8rem', color: '#78716C', marginBottom: '1rem' }}>

@@ -42,7 +42,7 @@ const Navbar = () => {
         <div className="container header-container">
           {/* Brand Logo & Name */}
           <Link to="/" className="header-brand">
-            <img src="/assets/Mandal Logo.png" alt="Mandal Logo" className="brand-logo-img" />
+            <img src={config.logoUrl || config.mandalLogo || "/assets/Mandal Logo.png"} alt="Mandal Logo" className="brand-logo-img" />
             <div className="brand-info">
               <span className="brand-name">{config.mandalName}</span>
               <span className="brand-tagline">गणेशोत्सव {config.festivalYear}</span>

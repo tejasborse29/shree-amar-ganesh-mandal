@@ -74,7 +74,7 @@ const PrintableReceipt = ({ receipt, onClose }) => {
         )}
 
         <div className="receipt-header-branding">
-          <img src="/assets/Mandal Logo.png" alt="Mandal Logo" className="receipt-logo" />
+          <img src={config.logoUrl || config.mandalLogo || "/assets/Mandal Logo.png"} alt="Mandal Logo" className="receipt-logo" />
           <h2 className="receipt-mandal-title">{config.mandalName}</h2>
           <p className="receipt-mandal-sub">« {config.mandalTagline} »</p>
           <p style={{ fontSize: '0.8rem', color: '#6B7280', marginTop: '0.25rem' }}>

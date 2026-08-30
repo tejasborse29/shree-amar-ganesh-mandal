@@ -43,6 +43,7 @@ def update_settings():
         "key": "mandal_settings",
         "mandalName": data.get("mandalName", Config.MANDAL_NAME),
         "mandalTagline": data.get("mandalTagline", Config.MANDAL_TAGLINE),
+        "logoUrl": data.get("logoUrl", "/assets/Mandal Logo.png"),
         "festivalYear": int(data.get("festivalYear", Config.DEFAULT_FESTIVAL_YEAR)),
         "financialYear": data.get("financialYear", "2026-27"),
         "activeFestival": data.get("activeFestival", "गणेशोत्सव"),
