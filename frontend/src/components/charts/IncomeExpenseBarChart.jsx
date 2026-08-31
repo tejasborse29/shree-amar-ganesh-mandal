@@ -3,15 +3,30 @@ import React, { useState } from 'react';
 const IncomeExpenseBarChart = ({ monthlyTrend = [] }) => {
   const [hovered, setHovered] = useState(null);
 
-  if (!monthlyTrend || monthlyTrend.length === 0) {
+  const hasData = monthlyTrend && monthlyTrend.some((d) => ((d.income || 0) > 0 || (d.expense || 0) > 0));
+
+  if (!hasData) {
     return (
-      <div className="chart-card">
-        <div className="chart-header">
-          <h4 className="chart-title">मासिक जमा विरुद्ध खर्च (Income vs Expense)</h4>
+      <div className="chart-card" style={{ padding: '1.5rem', background: '#FFFFFF', borderRadius: '16px', border: '1px solid #E7E5E4' }}>
+        <div className="chart-header" style={{ marginBottom: '1rem' }}>
+          <div>
+            <h4 className="chart-title" style={{ fontSize: '1rem', fontWeight: 800, color: '#1C1917' }}>
+              📊 मासिक जमा विरुद्ध खर्च (Monthly Trend)
+            </h4>
+            <span className="chart-subtitle" style={{ fontSize: '0.8rem', color: '#78716C' }}>
+              उत्सवाची आर्थिक स्थिती
+            </span>
+          </div>
         </div>
-        <p style={{ color: '#9CA3AF', fontSize: '0.85rem', textAlign: 'center', padding: '2rem 0' }}>
-          डेटा उपलब्ध नाही
-        </p>
+        <div style={{ textAlign: 'center', padding: '2rem 1rem', background: '#FAF8F5', borderRadius: '12px', border: '1px dashed #E7E5E4' }}>
+          <div style={{ fontSize: '2.2rem', marginBottom: '0.4rem' }}>📊</div>
+          <p style={{ color: '#57534E', fontWeight: 700, fontSize: '0.92rem', marginBottom: '0.25rem' }}>
+            या उत्सवात अद्याप जमा किंवा खर्चाची नोंद झालेली नाही (₹०)
+          </p>
+          <span style={{ color: '#A8A29E', fontSize: '0.8rem' }}>
+            नवीन वर्गणी पावती किंवा खर्च जोडताच येथे मासिक आलेख आपोआप तयार होईल.
+          </span>
+        </div>
       </div>
     );
   }

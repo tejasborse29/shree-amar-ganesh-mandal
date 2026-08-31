@@ -18,8 +18,9 @@ const ReportsPage = () => {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const year = activeFestival?.festivalYear || 2026;
-      const res = await api.get(`/reports/financial?year=${year}&period=${period}`);
+      const year = activeFestival?.name === 'सर्व उत्सव' ? 0 : (activeFestival?.festivalYear || 2026);
+      const festName = activeFestival?.name || '';
+      const res = await api.get(`/reports/financial?year=${year}&festival=${encodeURIComponent(festName)}&period=${period}`);
       if (res.success) {
         setReportData(res.summary);
       }

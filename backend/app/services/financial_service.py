@@ -148,7 +148,7 @@ def get_financial_summary(festival_year: int = 2026, start_date=None, end_date=N
     trend_income = {
         item["_id"]: float(item["amount"])
         for item in db.db.income.aggregate([
-            {"$match": {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}},
+            {"$match": match_income},
             {"$group": {"_id": {"$dateToString": {"format": "%Y-%m", "date": "$date"}}, "amount": {"$sum": "$amount"}}}
         ]) if item["_id"]
     }
@@ -156,7 +156,7 @@ def get_financial_summary(festival_year: int = 2026, start_date=None, end_date=N
     trend_expense = {
         item["_id"]: float(item["amount"])
         for item in db.db.expenses.aggregate([
-            {"$match": {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}},
+            {"$match": match_expense},
             {"$group": {"_id": {"$dateToString": {"format": "%Y-%m", "date": "$date"}}, "amount": {"$sum": "$amount"}}}
         ]) if item["_id"]
     }

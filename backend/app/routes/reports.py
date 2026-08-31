@@ -17,14 +17,27 @@ reports_bp = Blueprint("reports", __name__, url_prefix="/api/reports")
 @role_required("super_admin", "treasurer")
 def get_financial_report():
     festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
+    festival_name = request.args.get("festival", "").strip()
     start_date = request.args.get("startDate")
     end_date = request.args.get("endDate")
     
-    summary = get_financial_summary(festival_year, start_date=start_date, end_date=end_date)
+    summary = get_financial_summary(festival_year, start_date=start_date, end_date=end_date, festival_name=festival_name if festival_name else None)
     
     # Optional detailed lists
-    income_query = {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}
-    expense_query = {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}
+    income_query = {"status": {"$ne": "CANCELLED"}}
+    expense_query = {"status": {"$ne": "CANCELLED"}}
+
+    if festival_name and festival_name != "सर्व उत्सव" and festival_year > 0:
+        income_query["festivalName"] = festival_name
+        income_query["festivalYear"] = festival_year
+        expense_query["festivalName"] = festival_name
+        expense_query["festivalYear"] = festival_year
+    elif festival_name and festival_name != "सर्व उत्सव":
+        income_query["festivalName"] = festival_name
+        expense_query["festivalName"] = festival_name
+    elif festival_year > 0:
+        income_query["festivalYear"] = festival_year
+        expense_query["festivalYear"] = festival_year
     
     if start_date and end_date:
         try:
