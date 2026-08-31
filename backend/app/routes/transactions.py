@@ -31,7 +31,10 @@ def get_transactions():
     # 1. Fetch Income records
     income_query = {}
     if festival_name and festival_name != "सर्व उत्सव" and festival_year and int(festival_year) > 0:
-        income_query["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
+        income_query["festivalName"] = festival_name
+        income_query["festivalYear"] = int(festival_year)
+    elif festival_name and festival_name != "सर्व उत्सव":
+        income_query["festivalName"] = festival_name
     elif festival_year and int(festival_year) > 0:
         income_query["festivalYear"] = int(festival_year)
         
@@ -63,7 +66,10 @@ def get_transactions():
     # 2. Fetch Expense records
     expense_query = {}
     if festival_name and festival_name != "सर्व उत्सव" and festival_year and int(festival_year) > 0:
-        expense_query["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
+        expense_query["festivalName"] = festival_name
+        expense_query["festivalYear"] = int(festival_year)
+    elif festival_name and festival_name != "सर्व उत्सव":
+        expense_query["festivalName"] = festival_name
     elif festival_year and int(festival_year) > 0:
         expense_query["festivalYear"] = int(festival_year)
     if payment_mode:

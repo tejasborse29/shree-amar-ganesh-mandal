@@ -33,8 +33,13 @@ def get_financial_summary(festival_year: int = 2026, start_date=None, end_date=N
     if festival_name and festival_name == "सर्व उत्सव":
         pass
     elif festival_name and festival_year and int(festival_year) > 0:
-        match_income["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
-        match_expense["$or"] = [{"festivalName": festival_name}, {"festivalYear": int(festival_year)}]
+        match_income["festivalName"] = festival_name
+        match_income["festivalYear"] = int(festival_year)
+        match_expense["festivalName"] = festival_name
+        match_expense["festivalYear"] = int(festival_year)
+    elif festival_name:
+        match_income["festivalName"] = festival_name
+        match_expense["festivalName"] = festival_name
     elif festival_year and int(festival_year) > 0:
         match_income["festivalYear"] = int(festival_year)
         match_expense["festivalYear"] = int(festival_year)
@@ -73,13 +78,27 @@ def get_financial_summary(festival_year: int = 2026, start_date=None, end_date=N
     total_pending = float(pending_res[0]["total"]) if pending_res else 0.0
 
     # 4. Receipt Counts
-    active_receipts = db.db.receipts.count_documents({"festivalYear": festival_year, "status": "ACTIVE"})
-    cancelled_receipts = db.db.receipts.count_documents({"festivalYear": festival_year, "status": "CANCELLED"})
+    match_receipts_active = {"status": "ACTIVE"}
+    match_receipts_cancelled = {"status": "CANCELLED"}
+    if festival_name and festival_name != "सर्व उत्सव" and festival_year and int(festival_year) > 0:
+        match_receipts_active["festivalName"] = festival_name
+        match_receipts_active["festivalYear"] = int(festival_year)
+        match_receipts_cancelled["festivalName"] = festival_name
+        match_receipts_cancelled["festivalYear"] = int(festival_year)
+    elif festival_name and festival_name != "सर्व उत्सव":
+        match_receipts_active["festivalName"] = festival_name
+        match_receipts_cancelled["festivalName"] = festival_name
+    elif festival_year and int(festival_year) > 0:
+        match_receipts_active["festivalYear"] = int(festival_year)
+        match_receipts_cancelled["festivalYear"] = int(festival_year)
+
+    active_receipts = db.db.receipts.count_documents(match_receipts_active)
+    cancelled_receipts = db.db.receipts.count_documents(match_receipts_cancelled)
 
     # 5. Member and Volunteer Counts
     active_members = db.db.members.count_documents({"status": "active"})
     active_volunteers = db.db.users.count_documents({"isActive": True})
-    upcoming_events = db.db.events.count_documents({"festivalYear": festival_year, "isPublished": True})
+    upcoming_events = db.db.events.count_documents({"isPublished": True})
 
     # 6. Income by Category (Head-wise)
     income_cat_pipeline = [

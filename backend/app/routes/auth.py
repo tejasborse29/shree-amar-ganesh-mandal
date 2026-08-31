@@ -180,8 +180,9 @@ def register():
     mobile = normalize_digits(str(data.get("mobile", ""))).strip()
     email = str(data.get("email", "")).strip().lower()
     password = str(data.get("password", "")).strip()
-    role = str(data.get("role", "volunteer")).strip().lower()
-    department = str(data.get("department", "उत्सव समिती (Committee)")).strip()
+    mandal_name = str(data.get("mandalName", "")).strip()
+    role = str(data.get("role", "super_admin")).strip().lower()
+    department = str(data.get("department", "मंडळ प्रशासन (Administration)")).strip()
     
     if not name or not raw_username or not mobile or not password:
         return jsonify({
@@ -225,15 +226,15 @@ def register():
             "message": "हे वापरकर्तानाव किंवा मोबाईल नंबर आधीच नोंदणीकृत आहे (Username or mobile already registered)"
         }), 409
 
-    # Valid roles
-    allowed_roles = ["super_admin", "treasurer", "receipt_manager", "event_manager", "volunteer"]
-    if role not in allowed_roles:
-        role = "volunteer"
+    # Default to super_admin for new mandal creators
+    if role not in ["super_admin", "treasurer", "receipt_manager", "event_manager", "volunteer"]:
+        role = "super_admin"
 
     now = datetime.datetime.now(datetime.timezone.utc)
     user_doc = {
         "username": username,
         "name": name,
+        "mandalName": mandal_name or "श्री अमर गणेश मित्र मंडळ",
         "passwordHash": hash_password(password),
         "role": role,
         "department": department,
@@ -247,10 +248,22 @@ def register():
     res = database.users.insert_one(user_doc)
     user_id = str(res.inserted_id)
     
+    # If a new mandalName was provided, update mandal settings
+    if mandal_name:
+        database.settings.update_one(
+            {"key": "mandal_settings"},
+            {"$set": {
+                "mandalName": mandal_name,
+                "updatedAt": now
+            }},
+            upsert=True
+        )
+    
     user_info = {
         "id": user_id,
         "username": username,
         "name": name,
+        "mandalName": user_doc["mandalName"],
         "role": role,
         "department": department,
         "mobile": mobile,

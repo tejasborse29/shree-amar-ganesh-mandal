@@ -13,17 +13,23 @@ receipts_bp = Blueprint("receipts", __name__, url_prefix="/api/receipts")
 @receipts_bp.route("", methods=["GET"])
 @token_required
 def get_receipts():
-    search = request.args.get("search", "").strip()
-    status = request.args.get("status", "").strip()
-    payment_mode = request.args.get("paymentMode", "").strip()
     festival_year = request.args.get("year")
+    festival_name = request.args.get("festival", "").strip()
+    status = request.args.get("status")
+    payment_mode = request.args.get("paymentMode")
+    search = request.args.get("search", "").strip()
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 20))
     sort_by = request.args.get("sortBy", "createdAt")
     sort_order = -1 if request.args.get("sortOrder", "desc") == "desc" else 1
 
     query = {}
-    if festival_year:
+    if festival_name and festival_name != "सर्व उत्सव" and festival_year and int(festival_year) > 0:
+        query["festivalName"] = festival_name
+        query["festivalYear"] = int(festival_year)
+    elif festival_name and festival_name != "सर्व उत्सव":
+        query["festivalName"] = festival_name
+    elif festival_year and int(festival_year) > 0:
         query["festivalYear"] = int(festival_year)
     if status:
         query["status"] = status.upper()

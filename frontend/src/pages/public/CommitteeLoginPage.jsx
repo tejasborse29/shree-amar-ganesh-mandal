@@ -24,14 +24,15 @@ const CommitteeLoginPage = () => {
 
   // Register State
   const [regForm, setRegForm] = useState({
+    mandalName: '',
     name: '',
     username: '',
     mobile: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'volunteer',
-    department: 'उत्सव समिती (Committee)'
+    role: 'super_admin',
+    department: 'मंडळ प्रशासन (Administration)'
   });
   const [submittingReg, setSubmittingReg] = useState(false);
 
@@ -68,8 +69,8 @@ const CommitteeLoginPage = () => {
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
-    if (!regForm.name || !regForm.username || !regForm.mobile || !regForm.password) {
-      showError('कृपया सर्व आवश्यक (*) माहिती भरा.');
+    if (!regForm.mandalName || !regForm.name || !regForm.username || !regForm.mobile || !regForm.password) {
+      showError('कृपया मंडळाचे नाव, पूर्ण नाव, वापरकर्तानाव, मोबाईल आणि पासवर्ड भरा.');
       return;
     }
 
@@ -91,13 +92,14 @@ const CommitteeLoginPage = () => {
     setSubmittingReg(true);
     try {
       const payload = {
+        mandalName: regForm.mandalName.trim(),
         name: regForm.name.trim(),
         username: regForm.username.trim().toLowerCase(),
         mobile: regForm.mobile.trim(),
         email: regForm.email.trim(),
         password: regForm.password,
-        role: regForm.role,
-        department: regForm.department
+        role: 'super_admin',
+        department: regForm.department || 'मंडळ प्रशासन (Administration)'
       };
 
       const res = await register(payload);
@@ -379,7 +381,21 @@ const CommitteeLoginPage = () => {
             <form onSubmit={handleRegisterSubmit} autoComplete="off">
               <div className="form-group mb-2">
                 <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                  पूर्ण नाव (Full Name) *
+                  तुमच्या मंडळाचे नाव (Mandal Name) *
+                </label>
+                <input
+                  type="text"
+                  value={regForm.mandalName}
+                  onChange={(e) => setRegForm({ ...regForm, mandalName: e.target.value })}
+                  className="form-input"
+                  placeholder="उदा. श्री अमर गणेश मित्र मंडळ किंवा जय बजरंग मंडळ"
+                  required
+                />
+              </div>
+
+              <div className="form-group mb-2">
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  पूर्ण नाव (Full Name / Admin Name) *
                 </label>
                 <input
                   type="text"
@@ -421,48 +437,35 @@ const CommitteeLoginPage = () => {
                 </div>
               </div>
 
-              <div className="form-group mb-2">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                  ईमेल आयडी (Email ID - ऐच्छिक)
-                </label>
-                <input
-                  type="email"
-                  value={regForm.email}
-                  onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                  className="form-input"
-                  placeholder="rahul@example.com"
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem' }}>
+                <div className="form-group mb-2">
+                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                    ईमेल आयडी (ऐच्छिक)
+                  </label>
+                  <input
+                    type="email"
+                    value={regForm.email}
+                    onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
+                    className="form-input"
+                    placeholder="rahul@example.com"
+                  />
+                </div>
                 <div className="form-group mb-2">
                   <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
                     भूमिका (Role)
                   </label>
-                  <select
-                    value={regForm.role}
-                    onChange={(e) => setRegForm({ ...regForm, role: e.target.value })}
-                    className="form-select"
-                    style={{ fontSize: '0.85rem' }}
-                  >
-                    <option value="volunteer">🤝 कार्यकर्ता (Volunteer)</option>
-                    <option value="treasurer">💰 खजिनदार (Treasurer)</option>
-                    <option value="receipt_manager">🧾 पावती प्रमुख (Receipt Mgr)</option>
-                    <option value="event_manager">🎪 कार्यक्रम प्रमुख (Event Mgr)</option>
-                    <option value="super_admin">👑 मंडळ प्रमुख (Super Admin)</option>
-                  </select>
-                </div>
-                <div className="form-group mb-2">
-                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                    विभाग (Department)
-                  </label>
-                  <input
-                    type="text"
-                    value={regForm.department}
-                    onChange={(e) => setRegForm({ ...regForm, department: e.target.value })}
-                    className="form-input"
-                    placeholder="उत्सव समिती"
-                  />
+                  <div style={{
+                    background: '#FEF3C7',
+                    border: '1.5px solid #F59E0B',
+                    color: '#92400E',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                    textAlign: 'center'
+                  }}>
+                    👑 मंडळ प्रमुख (Super Admin)
+                  </div>
                 </div>
               </div>
 

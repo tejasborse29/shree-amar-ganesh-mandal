@@ -11,6 +11,7 @@ import AdminLayout from './layouts/AdminLayout';
 // Eagerly loaded public entry pages
 import HomePage from './pages/public/HomePage';
 import CommitteeLoginPage from './pages/public/CommitteeLoginPage';
+import AIChatBot from './components/common/AIChatBot';
 
 // Lazy loaded public pages
 const AboutPage = lazy(() => import('./pages/public/AboutPage'));
@@ -163,6 +164,7 @@ function App() {
 
               </Routes>
             </Suspense>
+            <AIChatBot />
           </ToastProvider>
         </ConfigProvider>
       </AuthProvider>

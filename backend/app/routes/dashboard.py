@@ -23,7 +23,10 @@ def get_dashboard_summary():
     
     task_query = {"status": {"$in": ["Pending", "In Progress"]}}
     if festival_name and festival_name != "सर्व उत्सव" and festival_year > 0:
-        task_query["$or"] = [{"festivalName": festival_name}, {"festivalYear": festival_year}]
+        task_query["festivalName"] = festival_name
+        task_query["festivalYear"] = festival_year
+    elif festival_name and festival_name != "सर्व उत्सव":
+        task_query["festivalName"] = festival_name
     elif festival_year > 0:
         task_query["festivalYear"] = festival_year
 
@@ -40,7 +43,10 @@ def get_dashboard_summary():
     # Recent receipts for quick glance
     receipt_query = {}
     if festival_name and festival_name != "सर्व उत्सव" and festival_year > 0:
-        receipt_query["$or"] = [{"festivalName": festival_name}, {"festivalYear": festival_year}]
+        receipt_query["festivalName"] = festival_name
+        receipt_query["festivalYear"] = festival_year
+    elif festival_name and festival_name != "सर्व उत्सव":
+        receipt_query["festivalName"] = festival_name
     elif festival_year > 0:
         receipt_query["festivalYear"] = festival_year
 
