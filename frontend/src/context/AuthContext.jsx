@@ -52,6 +52,34 @@ export const AuthProvider = ({ children }) => {
     throw new Error(res.message || 'लॉगिन अयशस्वी');
   };
 
+  const register = async (userData) => {
+    const res = await api.post('/auth/register', userData);
+    if (res.success && res.token) {
+      setToken(res.token);
+      setUser(res.user);
+      localStorage.setItem('amgm_auth_token', res.token);
+      localStorage.setItem('amgm_user', JSON.stringify(res.user));
+      return res;
+    }
+    throw new Error(res.message || 'नोंदणी अयशस्वी');
+  };
+
+  const forgotPassword = async (identifier) => {
+    const res = await api.post('/auth/forgot-password', { identifier });
+    if (res.success) {
+      return res;
+    }
+    throw new Error(res.message || 'पडताळणी कोड पाठवता आला नाही');
+  };
+
+  const resetPassword = async (identifier, otp, newPassword) => {
+    const res = await api.post('/auth/reset-password', { identifier, otp, newPassword });
+    if (res.success) {
+      return res;
+    }
+    throw new Error(res.message || 'पासवर्ड बदलता आला नाही');
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -72,6 +100,9 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!user && !!token,
     loading,
     login,
+    register,
+    forgotPassword,
+    resetPassword,
     logout,
     hasRole,
     isSuperAdmin: user?.role === 'super_admin',
