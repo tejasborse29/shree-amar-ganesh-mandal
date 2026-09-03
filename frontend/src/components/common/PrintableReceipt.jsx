@@ -30,7 +30,8 @@ const PrintableReceipt = ({ receipt, onClose }) => {
     setDownloading(true);
     try {
       const receiptId = receipt.receiptNumber || receipt._id || receipt.id;
-      await downloadReceiptPDF(receiptId, `Receipt_${receiptNo}.pdf`);
+      const elem = document.getElementById('official-printable-receipt');
+      await downloadReceiptPDF(receiptId, `Receipt_${receiptNo}.pdf`, elem);
       showSuccess('पावती PDF डाउनलोड झाली!');
     } catch (e) {
       showError('PDF डाउनलोड करताना त्रुटी आली.');
@@ -68,7 +69,7 @@ const PrintableReceipt = ({ receipt, onClose }) => {
       </div>
 
       {/* Official Receipt Card */}
-      <div className="receipt-wrapper">
+      <div id="official-printable-receipt" className="receipt-wrapper">
         {isCancelled && (
           <div className="receipt-watermark-cancelled">रद्द / CANCELLED</div>
         )}

@@ -38,7 +38,12 @@ const SettingsPage = () => {
       instagram: 'https://www.instagram.com/bappa_majha_offical_17?igsh=bnMyazE3aG91aTJv',
       facebook: 'https://facebook.com',
       youtube: 'https://youtube.com'
-    }
+    },
+    homeButtons: [
+      { id: 'btn1', text: '📜 कार्यक्रम पत्रिका पहा', link: '/events', style: 'btn-primary', enabled: true },
+      { id: 'btn2', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron', enabled: true },
+      { id: 'btn3', text: 'ℹ️ मंडळाचा इतिहास व कार्य', link: '/about', style: 'btn-outline-gold', enabled: true }
+    ]
   });
 
   const fetchSettings = async () => {
@@ -54,7 +59,10 @@ const SettingsPage = () => {
           socialLinks: {
             ...prev.socialLinks,
             ...(res.settings.socialLinks || {})
-          }
+          },
+          homeButtons: (res.settings.homeButtons && res.settings.homeButtons.length > 0)
+            ? res.settings.homeButtons
+            : prev.homeButtons
         }));
       }
     } catch (e) {
@@ -173,13 +181,51 @@ const SettingsPage = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleButtonChange = (index, field, value) => {
+    setSettings((prev) => {
+      const updated = [...(prev.homeButtons || [])];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, homeButtons: updated };
+    });
+  };
+
+  const handleAddButton = () => {
+    setSettings((prev) => ({
+      ...prev,
+      homeButtons: [
+        ...(prev.homeButtons || []),
+        { id: `btn_${Date.now()}`, text: '✨ नवीन बटण', link: '/vargani', style: 'btn-primary', enabled: true }
+      ]
+    }));
+  };
+
+  const handleRemoveButton = (index) => {
+    setSettings((prev) => {
+      const updated = [...(prev.homeButtons || [])];
+      updated.splice(index, 1);
+      return { ...prev, homeButtons: updated };
+    });
+  };
+
+  const handleResetDefaultButtons = () => {
+    setSettings((prev) => ({
+      ...prev,
+      homeButtons: [
+        { id: 'btn1', text: '📜 कार्यक्रम पत्रिका पहा', link: '/events', style: 'btn-primary', enabled: true },
+        { id: 'btn2', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron', enabled: true },
+        { id: 'btn3', text: 'ℹ️ मंडळाचा इतिहास व कार्य', link: '/about', style: 'btn-outline-gold', enabled: true }
+      ]
+    }));
+    showSuccess('होम पेज बटन्स डीफॉल्टवर रीसेट केली!');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
     try {
       const res = await updateMandalConfig(settings);
       if (res.success) {
-        showSuccess(res.message || 'मंडळाची सर्व माहिती व लोगो यशस्वीपणे अद्यतनित झाले!');
+        showSuccess(res.message || 'मंडळाची सर्व माहिती, बटन्स व लोगो यशस्वीपणे अद्यतनित झाले!');
         refetchConfig();
       } else {
         showError(res.message || 'त्रुटी आली.');
@@ -194,19 +240,21 @@ const SettingsPage = () => {
   if (loading) return <Skeleton height="400px" borderRadius="16px" />;
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.5rem', color: 'var(--color-primary)', fontWeight: 800 }}>
-          ⚙️ मंडळ प्रणाली व माहिती व्यवस्थापन (Mandal Settings)
-        </h2>
-        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
-          मंडळाचे नाव, लोगो, उत्सव वर्ष, मंडप पत्ता, संपर्क, बँक QR कोड व सोशल मीडिया लिंक्स थेट संपादित करा
-        </p>
-      </div>
+    <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+      <div className="amgm-card" style={{ padding: '2rem', background: '#FFFFFF', borderRadius: '18px' }}>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+          <div>
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-primary)' }}>
+              ⚙️ मंडळ व सिस्टीम सेटिंग्ज (Mandal Settings)
+            </h2>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
+              मंडळाची माहिती, लोगो, बँक तपशील, होम पेज बटन्स व उत्सव कॉन्फिगरेशन व्यवस्थापित करा.
+            </p>
+          </div>
+        </div>
 
-      <div className="amgm-card amgm-card-gold" style={{ padding: '2rem' }}>
         <form onSubmit={handleSubmit}>
-          
           {/* 1. Mandal Identity */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderBottom: '2px solid #FDE047', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
             <span style={{ fontSize: '1.25rem' }}>🚩</span>
@@ -636,6 +684,133 @@ const SettingsPage = () => {
                 className="form-input"
               />
             </div>
+          </div>
+
+          {/* 7. Home Page Action Buttons Management */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '2px solid #FDE047', paddingBottom: '0.5rem', margin: '2rem 0 1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.25rem' }}>🔘</span>
+              <h3 style={{ fontSize: '1.15rem', color: 'var(--color-primary)', fontWeight: 800, margin: 0 }}>
+                ७. मुख्य पृष्ठ (Home Page) कृती बटन्स संपादन
+              </h3>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={handleAddButton}
+                className="btn btn-outline btn-sm"
+                style={{ fontSize: '0.8rem', color: '#16A34A', borderColor: '#16A34A' }}
+              >
+                ➕ नवीन बटण जोडा
+              </button>
+              <button
+                type="button"
+                onClick={handleResetDefaultButtons}
+                className="btn btn-outline btn-sm"
+                style={{ fontSize: '0.8rem' }}
+              >
+                🔄 डीफॉल्ट बटन्स
+              </button>
+            </div>
+          </div>
+
+          <p style={{ fontSize: '0.85rem', color: '#78716C', marginBottom: '1rem' }}>
+            वेबसाइटच्या मुख्य पृष्ठावर (Home Page Hero Section) दिसणाऱ्या बटणांची नावे, लिंक्स व रंग येथे बदला:
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.75rem' }}>
+            {settings.homeButtons?.map((btn, index) => (
+              <div
+                key={btn.id || index}
+                style={{
+                  background: '#FFFDF9',
+                  border: '1.5px solid #E7E5E4',
+                  borderRadius: '12px',
+                  padding: '1rem 1.25rem',
+                  display: 'grid',
+                  gridTemplateColumns: '1.5fr 1.2fr 1fr auto auto',
+                  gap: '0.75rem',
+                  alignItems: 'center'
+                }}
+              >
+                {/* Button Text */}
+                <div>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78716C', display: 'block', marginBottom: '0.2rem' }}>
+                    बटणाचे नाव (Text)
+                  </label>
+                  <input
+                    type="text"
+                    value={btn.text || ''}
+                    onChange={(e) => handleButtonChange(index, 'text', e.target.value)}
+                    className="form-input"
+                    placeholder="उदा. कार्यक्रम पत्रिका पहा"
+                    style={{ fontSize: '0.88rem', padding: '0.5rem 0.75rem' }}
+                  />
+                </div>
+
+                {/* Button Target Link */}
+                <div>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78716C', display: 'block', marginBottom: '0.2rem' }}>
+                    लिंक / पाथ (URL / Link)
+                  </label>
+                  <input
+                    type="text"
+                    value={btn.link || ''}
+                    onChange={(e) => handleButtonChange(index, 'link', e.target.value)}
+                    className="form-input"
+                    placeholder="/events किंवा https://..."
+                    style={{ fontSize: '0.88rem', padding: '0.5rem 0.75rem' }}
+                  />
+                </div>
+
+                {/* Button Style */}
+                <div>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78716C', display: 'block', marginBottom: '0.2rem' }}>
+                    रंग / शैली (Style)
+                  </label>
+                  <select
+                    value={btn.style || 'btn-primary'}
+                    onChange={(e) => handleButtonChange(index, 'style', e.target.value)}
+                    className="form-select"
+                    style={{ fontSize: '0.85rem', padding: '0.5rem 0.6rem' }}
+                  >
+                    <option value="btn-primary">🔴 मरून (Primary)</option>
+                    <option value="btn-saffron">🟠 केशरी (Saffron)</option>
+                    <option value="btn-outline-gold">🟡 सोनेरी (Gold Outline)</option>
+                    <option value="btn-outline">⚪ पांढरा (White Outline)</option>
+                  </select>
+                </div>
+
+                {/* Enabled Toggle */}
+                <div style={{ textAlign: 'center' }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 700, color: '#78716C', display: 'block', marginBottom: '0.2rem' }}>
+                    सक्रिय
+                  </label>
+                  <input
+                    type="checkbox"
+                    checked={btn.enabled !== false}
+                    onChange={(e) => handleButtonChange(index, 'enabled', e.target.checked)}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#16A34A' }}
+                  />
+                </div>
+
+                {/* Delete Button */}
+                <div>
+                  <label style={{ fontSize: '0.75rem', visibility: 'hidden', display: 'block', marginBottom: '0.2rem' }}>
+                    हटवा
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveButton(index)}
+                    className="btn btn-ghost btn-sm"
+                    style={{ color: '#DC2626', padding: '0.4rem 0.6rem', fontSize: '1.1rem' }}
+                    title="बटण काढून टाका"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Transparency Switch */}

@@ -41,6 +41,11 @@ def get_public_config():
             "instagram": "https://instagram.com",
             "youtube": "https://youtube.com"
         }),
+        "homeButtons": settings.get("homeButtons", [
+            {"id": "btn1", "text": "📜 कार्यक्रम पत्रिका पहा", "link": "/events", "style": "btn-primary", "enabled": True},
+            {"id": "btn2", "text": "🔐 समिती व्यवस्थापन Login", "link": "/committee/login", "style": "btn-saffron", "enabled": True},
+            {"id": "btn3", "text": "ℹ️ मंडळाचा इतिहास व कार्य", "link": "/about", "style": "btn-outline-gold", "enabled": True}
+        ]),
         "transparencyEnabled": settings.get("transparencyEnabled", True)
     }
     return jsonify({"success": True, "config": config}), 200

@@ -29,6 +29,12 @@ def get_settings():
         settings["visarjanDate"] = "2026-09-08T18:00:00"
     if "transparencyEnabled" not in settings:
         settings["transparencyEnabled"] = True
+    if "homeButtons" not in settings:
+        settings["homeButtons"] = [
+            {"id": "btn1", "text": "📜 कार्यक्रम पत्रिका पहा", "link": "/events", "style": "btn-primary", "enabled": True},
+            {"id": "btn2", "text": "🔐 समिती व्यवस्थापन Login", "link": "/committee/login", "style": "btn-saffron", "enabled": True},
+            {"id": "btn3", "text": "ℹ️ मंडळाचा इतिहास व कार्य", "link": "/about", "style": "btn-outline-gold", "enabled": True}
+        ]
         
     return jsonify({"success": True, "settings": settings}), 200
 
@@ -62,6 +68,7 @@ def update_settings():
         "bankName": data.get("bankName", ""),
         "transparencyEnabled": bool(data.get("transparencyEnabled", True)),
         "socialLinks": data.get("socialLinks", {}),
+        "homeButtons": data.get("homeButtons", []),
         "updatedAt": now
     }
     

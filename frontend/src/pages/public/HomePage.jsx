@@ -89,15 +89,38 @@ const HomePage = () => {
             </p>
 
             <div className="hero-actions">
-              <Link to="/events" className="btn btn-primary btn-lg">
-                📜 कार्यक्रम पत्रिका पहा
-              </Link>
-              <Link to="/committee/login" className="btn btn-saffron btn-lg">
-                🔐 समिती व्यवस्थापन Login
-              </Link>
-              <Link to="/about" className="btn btn-outline-gold btn-lg">
-                ℹ️ मंडळाचा इतिहास व कार्य
-              </Link>
+              {(config.homeButtons && config.homeButtons.length > 0
+                ? config.homeButtons.filter((b) => b.enabled !== false)
+                : [
+                    { id: 'btn1', text: '📜 कार्यक्रम पत्रिका पहा', link: '/events', style: 'btn-primary' },
+                    { id: 'btn2', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron' },
+                    { id: 'btn3', text: 'ℹ️ मंडळाचा इतिहास व कार्य', link: '/about', style: 'btn-outline-gold' }
+                  ]
+              ).map((btn, index) => {
+                const isExternal = btn.link?.startsWith('http');
+                if (isExternal) {
+                  return (
+                    <a
+                      key={btn.id || index}
+                      href={btn.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`btn ${btn.style || 'btn-primary'} btn-lg`}
+                    >
+                      {btn.text}
+                    </a>
+                  );
+                }
+                return (
+                  <Link
+                    key={btn.id || index}
+                    to={btn.link || '/'}
+                    className={`btn ${btn.style || 'btn-primary'} btn-lg`}
+                  >
+                    {btn.text}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Dynamic Live Countdown Box */}

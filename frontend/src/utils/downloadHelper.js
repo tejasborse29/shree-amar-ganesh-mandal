@@ -1,5 +1,48 @@
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
 export const getApiBaseUrl = () => {
   return import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://shree-amar-ganesh-api.onrender.com/api' : '/api');
+};
+
+/**
+ * Generates a high-definition PDF directly from a DOM element.
+ * Retains 100% native Devanagari text shaping, fonts, colors, and styling without glitches.
+ */
+export const exportElementToPDF = async (element, defaultFilename = 'download.pdf') => {
+  if (!element) return false;
+  
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 3, // High-res 300 DPI equivalent
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#FFFFFF',
+      windowWidth: 800
+    });
+    
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    
+    const margin = 10;
+    const imgWidth = pageWidth - (margin * 2);
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    
+    pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, Math.min(imgHeight, pageHeight - (margin * 2)));
+    pdf.save(defaultFilename);
+    return true;
+  } catch (err) {
+    console.error('Client-side PDF generation error:', err);
+    return false;
+  }
 };
 
 export const downloadBlobFile = async (endpoint, defaultFilename = 'download.pdf') => {
@@ -32,9 +75,18 @@ export const downloadBlobFile = async (endpoint, defaultFilename = 'download.pdf
   }
 };
 
-export const downloadReceiptPDF = async (receiptIdentifier, filename = null) => {
+export const downloadReceiptPDF = async (receiptIdentifier, filename = null, domElement = null) => {
   const cleanId = String(receiptIdentifier).trim();
   const targetFilename = filename || `Receipt_${cleanId}.pdf`;
+
+  // 1. Try crisp client-side rendering first if element provided or present in DOM
+  const targetElem = domElement || document.getElementById('official-printable-receipt') || document.querySelector('.receipt-wrapper');
+  if (targetElem) {
+    const success = await exportElementToPDF(targetElem, targetFilename);
+    if (success) return true;
+  }
+
+  // 2. Fallback to backend PDF endpoint
   return downloadBlobFile(`/receipts/${cleanId}/pdf`, targetFilename);
 };
 
