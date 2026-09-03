@@ -19,6 +19,7 @@ def get_public_config():
         "mandalName": settings.get("mandalName", Config.MANDAL_NAME),
         "mandalTagline": settings.get("mandalTagline", Config.MANDAL_TAGLINE),
         "logoUrl": settings.get("logoUrl", "/assets/Mandal Logo.png"),
+        "heroBappaPhotoUrl": settings.get("heroBappaPhotoUrl", "/assets/Ganpanti Bappa Photo (5).jpg"),
         "festivalYear": settings.get("festivalYear", Config.DEFAULT_FESTIVAL_YEAR),
         "financialYear": settings.get("financialYear", "2026-27"),
         "activeFestival": settings.get("activeFestival", "गणेशोत्सव"),
@@ -42,9 +43,7 @@ def get_public_config():
             "youtube": "https://youtube.com"
         }),
         "homeButtons": settings.get("homeButtons", [
-            {"id": "btn1", "text": "📜 कार्यक्रम पत्रिका पहा", "link": "/events", "style": "btn-primary", "enabled": True},
-            {"id": "btn2", "text": "🔐 समिती व्यवस्थापन Login", "link": "/committee/login", "style": "btn-saffron", "enabled": True},
-            {"id": "btn3", "text": "ℹ️ मंडळाचा इतिहास व कार्य", "link": "/about", "style": "btn-outline-gold", "enabled": True}
+            {"id": "btn1", "text": "🔐 समिती व्यवस्थापन Login", "link": "/committee/login", "style": "btn-saffron", "enabled": True}
         ]),
         "transparencyEnabled": settings.get("transparencyEnabled", True)
     }

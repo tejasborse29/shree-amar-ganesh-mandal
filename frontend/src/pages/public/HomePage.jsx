@@ -92,9 +92,7 @@ const HomePage = () => {
               {(config.homeButtons && config.homeButtons.length > 0
                 ? config.homeButtons.filter((b) => b.enabled !== false)
                 : [
-                    { id: 'btn1', text: '📜 कार्यक्रम पत्रिका पहा', link: '/events', style: 'btn-primary' },
-                    { id: 'btn2', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron' },
-                    { id: 'btn3', text: 'ℹ️ मंडळाचा इतिहास व कार्य', link: '/about', style: 'btn-outline-gold' }
+                    { id: 'btn1', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron' }
                   ]
               ).map((btn, index) => {
                 const isExternal = btn.link?.startsWith('http');
@@ -165,12 +163,12 @@ const HomePage = () => {
           <div className="hero-visual-wrapper">
             <div className="hero-bappa-frame">
               <img
-                src="/assets/Ganpanti Bappa Photo (5).jpg"
-                alt="Shree Amar Ganesh Bappa"
+                src={config.heroBappaPhotoUrl || config.heroImageUrl || "/assets/Ganpanti Bappa Photo (5).jpg"}
+                alt={config.mandalName ? `${config.mandalName} बाप्पा` : "श्री गणेश बाप्पा"}
                 className="hero-bappa-img"
               />
               <img
-                src="/assets/Mandal Logo.png"
+                src={config.logoUrl || config.mandalLogo || "/assets/Mandal Logo.png"}
                 alt="Logo Stamp"
                 className="hero-mandal-float-logo"
               />

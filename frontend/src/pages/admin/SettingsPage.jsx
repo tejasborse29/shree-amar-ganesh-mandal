@@ -9,6 +9,7 @@ const SettingsPage = () => {
   const { refetchConfig, updateMandalConfig } = useConfig();
   const qrFileInputRef = useRef(null);
   const logoFileInputRef = useRef(null);
+  const heroBappaFileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -17,6 +18,7 @@ const SettingsPage = () => {
     mandalName: 'श्री अमर गणेश मित्र मंडळ',
     mandalTagline: 'भक्ती परंपरेची… व्यवस्थापन आधुनिकतेचं!',
     logoUrl: '/assets/Mandal Logo.png',
+    heroBappaPhotoUrl: '/assets/Ganpanti Bappa Photo (5).jpg',
     festivalYear: 2026,
     financialYear: '2026-27',
     activeFestival: 'गणेशोत्सव',
@@ -40,9 +42,7 @@ const SettingsPage = () => {
       youtube: 'https://youtube.com'
     },
     homeButtons: [
-      { id: 'btn1', text: '📜 कार्यक्रम पत्रिका पहा', link: '/events', style: 'btn-primary', enabled: true },
-      { id: 'btn2', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron', enabled: true },
-      { id: 'btn3', text: 'ℹ️ मंडळाचा इतिहास व कार्य', link: '/about', style: 'btn-outline-gold', enabled: true }
+      { id: 'btn1', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron', enabled: true }
     ]
   });
 
@@ -55,6 +55,7 @@ const SettingsPage = () => {
           ...prev,
           ...res.settings,
           logoUrl: res.settings.logoUrl || prev.logoUrl,
+          heroBappaPhotoUrl: res.settings.heroBappaPhotoUrl || prev.heroBappaPhotoUrl,
           qrCodeUrl: res.settings.qrCodeUrl || prev.qrCodeUrl,
           socialLinks: {
             ...prev.socialLinks,
@@ -138,6 +139,49 @@ const SettingsPage = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleHeroBappaFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showError('कृपया वैध फोटो निवडा (JPG, PNG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1000;
+
+        if (width > height && width > maxDim) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else if (height > maxDim) {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.88);
+        setSettings((prev) => ({
+          ...prev,
+          heroBappaPhotoUrl: compressedBase64
+        }));
+        showSuccess('श्री गणपती बाप्पांचा नवीन मुख्य फोटो यशस्वीपणे निवडला गेला!');
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleQRFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -211,9 +255,7 @@ const SettingsPage = () => {
     setSettings((prev) => ({
       ...prev,
       homeButtons: [
-        { id: 'btn1', text: '📜 कार्यक्रम पत्रिका पहा', link: '/events', style: 'btn-primary', enabled: true },
-        { id: 'btn2', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron', enabled: true },
-        { id: 'btn3', text: 'ℹ️ मंडळाचा इतिहास व कार्य', link: '/about', style: 'btn-outline-gold', enabled: true }
+        { id: 'btn1', text: '🔐 समिती व्यवस्थापन Login', link: '/committee/login', style: 'btn-saffron', enabled: true }
       ]
     }));
     showSuccess('होम पेज बटन्स डीफॉल्टवर रीसेट केली!');
@@ -325,6 +367,75 @@ const SettingsPage = () => {
                     onChange={handleChange}
                     className="form-input"
                     placeholder="किंवा लोगो इमेज URL / पाथ टाका"
+                    style={{ fontSize: '0.82rem' }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Home Page Hero Bappa Photo Upload Box */}
+          <div style={{ background: '#FFFDF5', border: '1.5px dashed #D4AF37', borderRadius: '14px', padding: '1.25rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontWeight: 800, color: 'var(--color-primary)', fontSize: '0.95rem' }}>
+                🌺 मुख्य पृष्ठ श्री गणपती बाप्पा फोटो (Home Page Hero Ganpati Photo)
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettings((prev) => ({ ...prev, heroBappaPhotoUrl: '/assets/Ganpanti Bappa Photo (5).jpg' }))}
+                className="btn btn-outline btn-sm"
+                style={{ fontSize: '0.75rem' }}
+              >
+                🔄 मूळ बाप्पा फोटो वापरा (Reset Default Photo)
+              </button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '1.25rem', alignItems: 'center' }}>
+              {/* Bappa Photo Preview */}
+              <div style={{ textAlign: 'center' }}>
+                <img
+                  src={settings.heroBappaPhotoUrl || '/assets/Ganpanti Bappa Photo (5).jpg'}
+                  alt="Ganpati Bappa Hero Preview"
+                  style={{
+                    width: '90px',
+                    height: '110px',
+                    objectFit: 'cover',
+                    border: '2px solid #E7E5E4',
+                    borderRadius: '12px',
+                    background: '#FFFFFF',
+                    padding: '2px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+                  }}
+                />
+              </div>
+
+              {/* Upload Controls */}
+              <div>
+                <input
+                  type="file"
+                  ref={heroBappaFileInputRef}
+                  accept="image/*"
+                  onChange={handleHeroBappaFileChange}
+                  style={{ display: 'none' }}
+                />
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => heroBappaFileInputRef.current?.click()}
+                    className="btn btn-primary btn-sm"
+                    style={{ fontSize: '0.85rem' }}
+                  >
+                    📷 मोबाईल / संगणकामधून बाप्पांचा नवीन फोटो अपलोड करा
+                  </button>
+                </div>
+                <div className="form-group mb-0">
+                  <input
+                    type="text"
+                    name="heroBappaPhotoUrl"
+                    value={settings.heroBappaPhotoUrl || ''}
+                    onChange={handleChange}
+                    className="form-input"
+                    placeholder="किंवा बाप्पांच्या फोटोची URL / पाथ टाका"
                     style={{ fontSize: '0.82rem' }}
                   />
                 </div>

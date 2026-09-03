@@ -51,7 +51,8 @@ const LedgerPage = () => {
     setDownloading(true);
     try {
       const year = activeFestival?.festivalYear || 2026;
-      await downloadLedgerPDF(year, `AMGM_General_Ledger_${year}.pdf`);
+      const elem = document.getElementById('ledger-printable-area');
+      await downloadLedgerPDF(year, `AMGM_General_Ledger_${year}.pdf`, elem);
       showSuccess('नोंदवही PDF यशस्वीरीत्या डाउनलोड झाली!');
     } catch (err) {
       showError(err.message || 'PDF डाउनलोड करताना त्रुटी आली');
@@ -94,7 +95,16 @@ const LedgerPage = () => {
       </div>
 
       {/* Ledger Table Container */}
-      <div id="ledger-printable-area">
+      <div id="ledger-printable-area" style={{ background: '#FFFFFF', padding: '1rem', borderRadius: '16px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1rem', paddingBottom: '0.75rem', borderBottom: '2px solid #D4AF37' }}>
+          <h2 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#800000', margin: '0 0 0.2rem' }}>
+            {config.mandalName}
+          </h2>
+          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#D97706' }}>
+            अधिकृत नोंदवही व खतावणी (General Ledger) · {activeFestival?.name || 'गणेशोत्सव'} {activeFestival?.festivalYear || config.festivalYear}
+          </div>
+        </div>
+
         {loading ? (
           <Skeleton height="250px" borderRadius="16px" />
         ) : entries.length === 0 ? (

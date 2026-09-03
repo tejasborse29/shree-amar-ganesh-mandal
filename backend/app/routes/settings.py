@@ -27,13 +27,11 @@ def get_settings():
         settings["sthapanaDate"] = "2026-08-28T09:00:00"
     if "visarjanDate" not in settings:
         settings["visarjanDate"] = "2026-09-08T18:00:00"
-    if "transparencyEnabled" not in settings:
-        settings["transparencyEnabled"] = True
+    if "heroBappaPhotoUrl" not in settings:
+        settings["heroBappaPhotoUrl"] = "/assets/Ganpanti Bappa Photo (5).jpg"
     if "homeButtons" not in settings:
         settings["homeButtons"] = [
-            {"id": "btn1", "text": "📜 कार्यक्रम पत्रिका पहा", "link": "/events", "style": "btn-primary", "enabled": True},
-            {"id": "btn2", "text": "🔐 समिती व्यवस्थापन Login", "link": "/committee/login", "style": "btn-saffron", "enabled": True},
-            {"id": "btn3", "text": "ℹ️ मंडळाचा इतिहास व कार्य", "link": "/about", "style": "btn-outline-gold", "enabled": True}
+            {"id": "btn1", "text": "🔐 समिती व्यवस्थापन Login", "link": "/committee/login", "style": "btn-saffron", "enabled": True}
         ]
         
     return jsonify({"success": True, "settings": settings}), 200
@@ -50,6 +48,7 @@ def update_settings():
         "mandalName": data.get("mandalName", Config.MANDAL_NAME),
         "mandalTagline": data.get("mandalTagline", Config.MANDAL_TAGLINE),
         "logoUrl": data.get("logoUrl", "/assets/Mandal Logo.png"),
+        "heroBappaPhotoUrl": data.get("heroBappaPhotoUrl", "/assets/Ganpanti Bappa Photo (5).jpg"),
         "festivalYear": int(data.get("festivalYear", Config.DEFAULT_FESTIVAL_YEAR)),
         "financialYear": data.get("financialYear", "2026-27"),
         "activeFestival": data.get("activeFestival", "गणेशोत्सव"),

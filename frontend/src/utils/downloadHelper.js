@@ -100,7 +100,16 @@ export const downloadReportCSV = async (year, filename = null) => {
   return downloadBlobFile(`/reports/export-csv?year=${year}`, targetFilename);
 };
 
-export const downloadLedgerPDF = async (year, filename = null) => {
+export const downloadLedgerPDF = async (year, filename = null, domElement = null) => {
   const targetFilename = filename || `AMGM_General_Ledger_${year}.pdf`;
+  
+  // 1. Try crisp client-side rendering first if element provided or present in DOM
+  const targetElem = domElement || document.getElementById('ledger-printable-area') || document.querySelector('.admin-table');
+  if (targetElem) {
+    const success = await exportElementToPDF(targetElem, targetFilename);
+    if (success) return true;
+  }
+
+  // 2. Fallback to backend PDF endpoint
   return downloadBlobFile(`/reports/ledger-pdf?year=${year}`, targetFilename);
 };
