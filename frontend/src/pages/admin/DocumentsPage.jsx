@@ -57,13 +57,27 @@ const DocumentsPage = () => {
     }
     setSubmitting(true);
     try {
+      let fileData = '';
+      if (selectedFile) {
+        fileData = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(selectedFile);
+        });
+      }
+
       const formData = new FormData();
       formData.append('title', form.title.trim());
       formData.append('category', form.category);
       formData.append('description', form.description.trim());
       formData.append('festivalYear', activeFestival?.festivalYear || 2026);
       if (selectedFile) {
+        formData.append('fileName', selectedFile.name);
         formData.append('file', selectedFile);
+        if (fileData) {
+          formData.append('fileData', fileData);
+        }
       }
 
       const res = await api.post('/documents', formData, {
@@ -254,13 +268,46 @@ const DocumentsPage = () => {
                 </div>
               </div>
 
-              {/* Uploaded Image Preview (If image document) */}
-              {viewDoc.fileUrl && (viewDoc.fileUrl.startsWith('data:image') || viewDoc.fileUrl.endsWith('.jpg') || viewDoc.fileUrl.endsWith('.png') || viewDoc.fileUrl.endsWith('.jpeg')) && (
+              {/* 1. Uploaded PDF Viewer */}
+              {viewDoc.fileUrl && (viewDoc.fileUrl.startsWith('data:application/pdf') || (viewDoc.fileUrl.includes('.pdf') && !viewDoc.fileUrl.includes('placeholder'))) && (
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <div style={{ background: '#F1F5F9', padding: '0.6rem 1rem', borderRadius: '10px 10px 0 0', fontWeight: 800, fontSize: '0.85rem', color: '#1E293B', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #CBD5E1', borderBottom: 'none' }}>
+                    <span>📑 अपलोड केलेले मूळ PDF दस्तऐवज (Uploaded PDF Document)</span>
+                    <a
+                      href={viewDoc.fileUrl}
+                      download={viewDoc.fileName || `${viewDoc.title}.pdf`}
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}
+                    >
+                      📥 थेट PDF डाऊनलोड
+                    </a>
+                  </div>
+                  <iframe
+                    src={viewDoc.fileUrl}
+                    style={{ width: '100%', height: '480px', borderRadius: '0 0 10px 10px', border: '1px solid #CBD5E1', background: '#FFFFFF' }}
+                    title={viewDoc.title}
+                  />
+                </div>
+              )}
+
+              {/* 2. Uploaded Image Viewer */}
+              {viewDoc.fileUrl && (viewDoc.fileUrl.startsWith('data:image') || viewDoc.fileUrl.endsWith('.jpg') || viewDoc.fileUrl.endsWith('.png') || viewDoc.fileUrl.endsWith('.jpeg') || viewDoc.fileUrl.endsWith('.webp')) && (
                 <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+                  <div style={{ background: '#F1F5F9', padding: '0.6rem 1rem', borderRadius: '10px 10px 0 0', fontWeight: 800, fontSize: '0.85rem', color: '#1E293B', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #CBD5E1', borderBottom: 'none' }}>
+                    <span>🖼️ अपलोड केलेली मूळ दस्तऐवज इमेज (Uploaded Document Photo)</span>
+                    <a
+                      href={viewDoc.fileUrl}
+                      download={viewDoc.fileName || `${viewDoc.title}.png`}
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: '0.2rem 0.6rem', fontSize: '0.75rem' }}
+                    >
+                      📥 फोटो डाऊनलोड
+                    </a>
+                  </div>
                   <img
                     src={viewDoc.fileUrl}
                     alt={viewDoc.title}
-                    style={{ maxWidth: '100%', maxHeight: '350px', borderRadius: '10px', border: '1px solid #E2E8F0', objectFit: 'contain' }}
+                    style={{ maxWidth: '100%', maxHeight: '420px', borderRadius: '0 0 10px 10px', border: '1px solid #CBD5E1', objectFit: 'contain' }}
                   />
                 </div>
               )}

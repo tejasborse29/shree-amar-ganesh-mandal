@@ -4,7 +4,7 @@ import { useConfig } from '../../context/ConfigContext';
 import { useToast } from '../../context/ToastContext';
 import Skeleton from '../../components/common/Skeleton';
 import Modal from '../../components/common/Modal';
-import { downloadReportPDF, downloadReportCSV, exportElementToPDF } from '../../utils/downloadHelper';
+import { downloadReportPDF, downloadReportCSV, exportElementToPDF, exportReportToExcel } from '../../utils/downloadHelper';
 
 const ReportsPage = () => {
   const { showSuccess, showError } = useToast();
@@ -55,10 +55,16 @@ const ReportsPage = () => {
     const year = activeFestival?.festivalYear || 2026;
     try {
       await downloadReportCSV(year, `AMGM_Transactions_${year}.csv`);
-      showSuccess('CSV फाईल डाउनलोड झाली!');
+      showSuccess('CSV टेबल फाईल डाउनलोड झाली!');
     } catch (e) {
       showError('CSV डाउनलोड करताना त्रुटी आली.');
     }
+  };
+
+  const handleDownloadExcel = () => {
+    const year = activeFestival?.festivalYear || 2026;
+    exportReportToExcel(reportData, activeFestival?.name, year, config.mandalName);
+    showSuccess('Excel ताळेबंद टेबल डाउनलोड झाला!');
   };
 
   return (
@@ -75,12 +81,15 @@ const ReportsPage = () => {
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button onClick={handleDownloadPDF} className="btn btn-outline btn-sm">
-            <span>📥</span> PDF अहवाल
+            <span>📥</span> PDF अहवाल (Table)
+          </button>
+          <button onClick={handleDownloadExcel} className="btn btn-outline btn-sm">
+            <span>📑</span> Excel (.xls) टेबल
           </button>
           <button onClick={handleDownloadCSV} className="btn btn-outline btn-sm">
-            <span>📊</span> CSV Export
+            <span>📊</span> CSV तक्ता
           </button>
           <button onClick={() => window.print()} className="btn btn-outline btn-sm desktop-only">
             <span>🖨️</span> प्रिंट

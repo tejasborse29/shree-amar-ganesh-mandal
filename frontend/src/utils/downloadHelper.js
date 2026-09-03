@@ -113,3 +113,55 @@ export const downloadLedgerPDF = async (year, filename = null, domElement = null
   // 2. Fallback to backend PDF endpoint
   return downloadBlobFile(`/reports/ledger-pdf?year=${year}`, targetFilename);
 };
+
+export const exportReportToExcel = (reportData, festivalName, year, mandalName) => {
+  let tableHtml = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><style>
+      table { border-collapse: collapse; width: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; }
+      th { background-color: #800000; color: #FFFFFF; font-weight: bold; border: 1px solid #000000; padding: 10px; text-align: left; }
+      td { border: 1px solid #D1D5DB; padding: 8px; }
+      .gold-row { background-color: #FEF3C7; font-weight: bold; color: #92400E; }
+      .header-title { font-size: 16pt; font-weight: bold; color: #800000; text-align: center; }
+    </style></head>
+    <body>
+      <table>
+        <tr><td colspan="4" class="header-title">${mandalName || 'श्री अमर गणेश मित्र मंडळ'}</td></tr>
+        <tr><td colspan="4" style="text-align:center; font-weight:bold; color:#D97706;">वार्षिक ताळेबंद अहवाल तक्ता · ${festivalName || 'गणेशोत्सव'} ${year || 2026}</td></tr>
+        <tr><td colspan="4"></td></tr>
+        <tr>
+          <th>अ.क्र.</th>
+          <th>प्रवर्ग / तपशील (Head)</th>
+          <th style="text-align:center;">नोंदी संख्या</th>
+          <th style="text-align:right;">रक्कम (₹)</th>
+        </tr>
+  `;
+
+  // Income rows
+  tableHtml += `<tr><td colspan="4" style="background:#DCFCE7; font-weight:bold; color:#166534;">↗ जमा बाजू (INCOME)</td></tr>`;
+  (reportData?.incomeByCategory || []).forEach((item, idx) => {
+    tableHtml += `<tr><td>${idx + 1}</td><td>${item.category}</td><td style="text-align:center;">${item.count}</td><td style="text-align:right;">${item.amount}</td></tr>`;
+  });
+  tableHtml += `<tr class="gold-row"><td colspan="3">एकूण जमा (Total Income):</td><td style="text-align:right;">₹ ${reportData?.totalIncome || 0}</td></tr>`;
+
+  // Expense rows
+  tableHtml += `<tr><td colspan="4" style="background:#FEE2E2; font-weight:bold; color:#991B1B;">↘ खर्च बाजू (EXPENSE)</td></tr>`;
+  (reportData?.expenseByCategory || []).forEach((item, idx) => {
+    tableHtml += `<tr><td>${idx + 1}</td><td>${item.category}</td><td style="text-align:center;">${item.count}</td><td style="text-align:right;">${item.amount}</td></tr>`;
+  });
+  tableHtml += `<tr class="gold-row"><td colspan="3">एकूण खर्च (Total Expense):</td><td style="text-align:right;">₹ ${reportData?.totalExpenses || 0}</td></tr>`;
+
+  // Net Balance
+  tableHtml += `<tr style="background:#FEF3C7; font-weight:bold; font-size:13pt; color:#800000;"><td colspan="3">एकूण निव्वळ शिल्लक (Net Balance):</td><td style="text-align:right;">₹ ${reportData?.currentBalance || 0}</td></tr>`;
+  tableHtml += `</table></body></html>`;
+
+  const blob = new Blob([tableHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `Financial_Report_Table_${year || 2026}.xls`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};

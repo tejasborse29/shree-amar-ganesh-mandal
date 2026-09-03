@@ -71,13 +71,7 @@ def export_csv_report():
     output.write('\ufeff')
     writer = csv.writer(output)
     
-    # Professional Header Block
-    writer.writerow(["मंडळाचे नाव:", mandal_name])
-    writer.writerow(["उत्सव वर्ष:", f"गणेशोत्सव {festival_year}"])
-    writer.writerow(["अहवाल दिनांक:", datetime.datetime.now().strftime("%d/%m/%Y")])
-    writer.writerow([])
-    
-    # Unified Professional Table Columns
+    # Unified Professional Table Columns (Row 1 Header for Excel Table compatibility)
     writer.writerow([
         "अ.क्र. (Sr No)",
         "दिनांक (Date)",
@@ -87,7 +81,7 @@ def export_csv_report():
         "जमा रक्कम (Credit ₹)",
         "खर्च रक्कम (Debit ₹)",
         "भरणा पद्धत (Mode)",
-        "पावती / बिल क्र. (Receipt/Bill No)",
+        "पावती / संदर्भ (Receipt/Bill No)",
         "नोंद कर्ता (Added By)",
         "स्थिती (Status)"
     ])

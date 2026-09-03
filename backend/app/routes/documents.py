@@ -113,6 +113,7 @@ def get_documents():
 @token_required
 @role_required("super_admin", "treasurer", "event_manager")
 def upload_document():
+    import base64
     title = request.form.get("title", "").strip()
     category = request.form.get("category", "MANDAL_DOCS")
     description = request.form.get("description", "").strip()
@@ -121,21 +122,27 @@ def upload_document():
     if not title:
         return jsonify({"success": False, "message": "दस्तऐवजाचे शीर्षक आवश्यक आहे"}), 400
         
+    file_data = request.form.get("fileData", "").strip()
     uploaded_file = request.files.get("file")
     now = datetime.datetime.now(datetime.timezone.utc)
     
-    file_name = "document.pdf"
-    file_url = "/assets/police_permission_placeholder.pdf"
-    file_size = "500 KB"
+    file_name = request.form.get("fileName", "document.pdf")
+    file_url = ""
+    file_size = "उपलब्ध"
     
-    if uploaded_file and uploaded_file.filename:
+    if file_data and file_data.startswith("data:"):
+        file_url = file_data
+        approx_kb = round(len(file_data) * 0.75 / 1024, 1)
+        file_size = f"{approx_kb} KB"
+    elif uploaded_file and uploaded_file.filename:
         filename = secure_filename(uploaded_file.filename)
-        os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
-        file_path = os.path.join(Config.UPLOAD_FOLDER, filename)
-        uploaded_file.save(file_path)
+        raw_bytes = uploaded_file.read()
+        ext = filename.split(".")[-1].lower() if "." in filename else "pdf"
+        mime = "application/pdf" if ext == "pdf" else (f"image/{ext}" if ext in ["jpg", "jpeg", "png", "webp"] else "application/octet-stream")
+        b64 = base64.b64encode(raw_bytes).decode("utf-8")
+        file_url = f"data:{mime};base64,{b64}"
         file_name = filename
-        file_url = f"/api/documents/download/{filename}"
-        file_size = f"{round(os.path.getsize(file_path) / 1024, 1)} KB"
+        file_size = f"{round(len(raw_bytes) / 1024, 1)} KB"
         
     category_labels = {
         "MANDAL_DOCS": "मंडळ कागदपत्रे",
