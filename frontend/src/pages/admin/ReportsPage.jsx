@@ -323,6 +323,130 @@ const ReportsPage = () => {
           )}
         </div>
       )}
+
+      {/* Official Balance Statement Table (Always rendered for professional PDF and print) */}
+      <div style={{ marginTop: '1.75rem', borderTop: '2px solid #D4AF37', paddingTop: '1.25rem' }}>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#800000', marginBottom: '0.85rem', textAlign: 'center' }}>
+          📊 अधिकृत ताळेबंद तपशीलवार तक्ता (Financial Balance Sheet)
+        </h3>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+          {/* Income Table */}
+          <div style={{ border: '1px solid #BBF7D0', borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ background: '#DCFCE7', padding: '0.6rem 0.85rem', fontWeight: 800, color: '#166534', fontSize: '0.9rem', borderBottom: '1px solid #BBF7D0' }}>
+              ↗ जमा बाजू (Income Details)
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ background: '#F0FDF4', color: '#166534', borderBottom: '1px solid #DCFCE7' }}>
+                  <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>प्रवर्ग (Head)</th>
+                  <th style={{ padding: '0.4rem 0.6rem', textAlign: 'center' }}>संख्या</th>
+                  <th style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>रक्कम (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(reportData?.incomeByCategory || []).map((item, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid #F0FDF4' }}>
+                    <td style={{ padding: '0.45rem 0.6rem' }}>{item.category}</td>
+                    <td style={{ padding: '0.45rem 0.6rem', textAlign: 'center', color: '#64748B' }}>{item.count}</td>
+                    <td style={{ padding: '0.45rem 0.6rem', textAlign: 'right', fontWeight: 700, color: '#16A34A' }}>
+                      ₹ {item.amount?.toLocaleString('en-IN')}
+                    </td>
+                  </tr>
+                ))}
+                <tr style={{ background: '#DCFCE7', fontWeight: 800, color: '#166534' }}>
+                  <td colSpan={2} style={{ padding: '0.5rem 0.6rem' }}>एकूण जमा (Total Income):</td>
+                  <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right' }}>
+                    ₹ {reportData?.totalIncome?.toLocaleString('en-IN') || 0}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Expense Table */}
+          <div style={{ border: '1px solid #FECACA', borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ background: '#FEE2E2', padding: '0.6rem 0.85rem', fontWeight: 800, color: '#991B1B', fontSize: '0.9rem', borderBottom: '1px solid #FECACA' }}>
+              ↘ खर्च बाजू (Expense Details)
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ background: '#FEF2F2', color: '#991B1B', borderBottom: '1px solid #FEE2E2' }}>
+                  <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left' }}>प्रवर्ग (Head)</th>
+                  <th style={{ padding: '0.4rem 0.6rem', textAlign: 'center' }}>संख्या</th>
+                  <th style={{ padding: '0.4rem 0.6rem', textAlign: 'right' }}>रक्कम (₹)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(reportData?.expenseByCategory || []).map((item, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid #FEF2F2' }}>
+                    <td style={{ padding: '0.45rem 0.6rem' }}>{item.category}</td>
+                    <td style={{ padding: '0.45rem 0.6rem', textAlign: 'center', color: '#64748B' }}>{item.count}</td>
+                    <td style={{ padding: '0.45rem 0.6rem', textAlign: 'right', fontWeight: 700, color: '#DC2626' }}>
+                      ₹ {item.amount?.toLocaleString('en-IN')}
+                    </td>
+                  </tr>
+                ))}
+                <tr style={{ background: '#FEE2E2', fontWeight: 800, color: '#991B1B' }}>
+                  <td colSpan={2} style={{ padding: '0.5rem 0.6rem' }}>एकूण खर्च (Total Expense):</td>
+                  <td style={{ padding: '0.5rem 0.6rem', textAlign: 'right' }}>
+                    ₹ {reportData?.totalExpenses?.toLocaleString('en-IN') || 0}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Final Audit Summary Strip (Golden Table Footer) */}
+        <div style={{
+          background: '#FEF3C7',
+          border: '1.5px solid #F59E0B',
+          borderRadius: '12px',
+          padding: '0.85rem 1.25rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem',
+          marginBottom: '2rem'
+        }}>
+          <div>
+            <div style={{ fontSize: '0.8rem', color: '#92400E', fontWeight: 700 }}>आर्थिक ताळेबंद स्थिती</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#800000' }}>
+              एकूण निव्वळ शिल्लक (Net Balance): ₹ {reportData?.currentBalance?.toLocaleString('en-IN') || 0}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem' }}>
+            <div>
+              <span style={{ color: '#16A34A', fontWeight: 700 }}>जमा: ₹{reportData?.totalIncome?.toLocaleString('en-IN') || 0}</span>
+            </div>
+            <div>
+              <span style={{ color: '#DC2626', fontWeight: 700 }}>खर्च: ₹{reportData?.totalExpenses?.toLocaleString('en-IN') || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Official Signatures */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: '1.5rem', borderTop: '1px dashed #CBD5E1', marginTop: '1rem' }}>
+          <div style={{ textAlign: 'center', minWidth: '160px' }}>
+            <div style={{ height: '35px', borderBottom: '1.5px solid #1E293B', marginBottom: '0.4rem' }}></div>
+            <div style={{ fontWeight: 800, color: '#1E293B', fontSize: '0.88rem' }}>अध्यक्ष / President</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{config.mandalName}</div>
+          </div>
+
+          <div style={{ textAlign: 'center', color: '#16A34A', border: '1.5px dashed #16A34A', padding: '0.4rem 0.85rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800 }}>
+            ★ अधिकृत ऑडिट रिपोर्ट ★<br />
+            {activeFestival?.name || 'गणेशोत्सव'} {activeFestival?.festivalYear || config.festivalYear}
+          </div>
+
+          <div style={{ textAlign: 'center', minWidth: '160px' }}>
+            <div style={{ height: '35px', borderBottom: '1.5px solid #1E293B', marginBottom: '0.4rem' }}></div>
+            <div style={{ fontWeight: 800, color: '#1E293B', fontSize: '0.88rem' }}>खजिनदार / Treasurer</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{config.mandalName}</div>
+          </div>
+        </div>
+      </div>
       </div>
 
       {/* FILTER BOTTOM SHEET MODAL (Matching Screenshot 4 bottom right) */}

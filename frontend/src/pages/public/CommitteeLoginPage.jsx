@@ -211,366 +211,105 @@ const CommitteeLoginPage = () => {
             </p>
           </div>
 
-          {/* Navigation Tabs (Login / Register) */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            background: '#F5F5F4',
-            borderRadius: '12px',
-            padding: '4px',
-            marginBottom: '1.75rem',
-            gap: '4px'
-          }}>
-            <button
-              type="button"
-              onClick={() => setActiveTab('login')}
-              style={{
-                padding: '0.65rem 0.5rem',
-                borderRadius: '10px',
-                border: 'none',
-                background: activeTab === 'login' ? '#FFFFFF' : 'transparent',
-                color: activeTab === 'login' ? 'var(--color-primary)' : '#78716C',
-                fontWeight: activeTab === 'login' ? 800 : 600,
-                fontSize: '0.92rem',
-                cursor: 'pointer',
-                boxShadow: activeTab === 'login' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              🔐 समिती लॉगिन
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('register')}
-              style={{
-                padding: '0.65rem 0.5rem',
-                borderRadius: '10px',
-                border: 'none',
-                background: activeTab === 'register' ? '#FFFFFF' : 'transparent',
-                color: activeTab === 'register' ? 'var(--color-primary)' : '#78716C',
-                fontWeight: activeTab === 'register' ? 800 : 600,
-                fontSize: '0.92rem',
-                cursor: 'pointer',
-                boxShadow: activeTab === 'register' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              📝 नवीन नोंदणी (New)
-            </button>
-          </div>
+          {/* --- LOGIN FORM --- */}
+          <form onSubmit={handleLoginSubmit} autoComplete="on">
+            <div className="form-group mb-3">
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.88rem' }}>
+                वापरकर्तानाव / मोबाईल / ईमेल आयडी *
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  name="username"
+                  autoComplete="username"
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
+                  className="form-input"
+                  placeholder="उदा. admin किंवा 9876543210 किंवा email@id"
+                  style={{ fontSize: '0.95rem', paddingRight: '2.5rem' }}
+                  required
+                />
+                <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#A8A29E' }}>
+                  👤
+                </span>
+              </div>
+            </div>
 
-          {/* --- TAB 1: LOGIN FORM --- */}
-          {activeTab === 'login' && (
-            <form onSubmit={handleLoginSubmit} autoComplete="on">
-              <div className="form-group mb-3">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.88rem' }}>
-                  वापरकर्तानाव / मोबाईल / ईमेल आयडी *
+            <div className="form-group mb-2">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label className="form-label mb-0" style={{ fontWeight: 700, fontSize: '0.88rem' }}>
+                  पासवर्ड (Password) *
                 </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    name="username"
-                    autoComplete="username"
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    className="form-input"
-                    placeholder="उदा. admin किंवा 9876543210 किंवा email@id"
-                    style={{ fontSize: '0.95rem', paddingRight: '2.5rem' }}
-                    required
-                  />
-                  <span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#A8A29E' }}>
-                    👤
-                  </span>
-                </div>
-              </div>
-
-              <div className="form-group mb-2">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                  <label className="form-label mb-0" style={{ fontWeight: 700, fontSize: '0.88rem' }}>
-                    पासवर्ड (Password) *
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setForgotModal(true);
-                      setForgotStep(1);
-                      setForgotIdentifier(loginIdentifier);
-                    }}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: 'var(--color-saffron)',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      padding: 0
-                    }}
-                  >
-                    🔑 पासवर्ड विसरलात?
-                  </button>
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type={showPass ? 'text' : 'password'}
-                    name="password"
-                    autoComplete="current-password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    className="form-input"
-                    placeholder="आपला पासवर्ड प्रविष्ट करा"
-                    style={{ fontSize: '0.95rem', paddingRight: '2.8rem' }}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPass(!showPass)}
-                    style={{
-                      position: 'absolute',
-                      right: '10px',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '1rem',
-                      color: '#78716C'
-                    }}
-                  >
-                    {showPass ? '🙈' : '👁️'}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submittingLogin}
-                className="btn btn-primary btn-lg"
-                style={{
-                  width: '100%',
-                  marginTop: '1.25rem',
-                  padding: '0.85rem',
-                  fontSize: '1rem',
-                  fontWeight: 800,
-                  borderRadius: '12px'
-                }}
-              >
-                {submittingLogin ? 'प्रमाणीकरण होत आहे...' : '🔐 समिती लॉगिन करा'}
-              </button>
-
-              <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('register')}
+                  onClick={() => {
+                    setForgotModal(true);
+                    setForgotStep(1);
+                    setForgotIdentifier(loginIdentifier);
+                  }}
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: 'var(--color-primary)',
-                    fontSize: '0.88rem',
+                    color: 'var(--color-saffron)',
+                    fontSize: '0.8rem',
                     fontWeight: 700,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    padding: 0
                   }}
                 >
-                  नवीन मंडळ / कार्यकर्ता आहात? <span style={{ color: 'var(--color-saffron)' }}>येथे नवीन खाते तयार करा →</span>
+                  🔑 पासवर्ड विसरलात?
                 </button>
               </div>
-            </form>
-          )}
-
-          {/* --- TAB 2: REGISTER FORM --- */}
-          {activeTab === 'register' && (
-            <form onSubmit={handleRegisterSubmit} autoComplete="off">
-              <div className="form-group mb-2">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                  तुमच्या मंडळाचे नाव (Mandal Name) *
-                </label>
+              <div style={{ position: 'relative' }}>
                 <input
-                  type="text"
-                  value={regForm.mandalName}
-                  onChange={(e) => setRegForm({ ...regForm, mandalName: e.target.value })}
+                  type={showPass ? 'text' : 'password'}
+                  name="password"
+                  autoComplete="current-password"
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                   className="form-input"
-                  placeholder="उदा. श्री अमर गणेश मित्र मंडळ किंवा जय बजरंग मंडळ"
+                  placeholder="आपला पासवर्ड प्रविष्ट करा"
+                  style={{ fontSize: '0.95rem', paddingRight: '2.8rem' }}
                   required
                 />
-              </div>
-
-              <div className="form-group mb-2">
-                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                  पूर्ण नाव (Full Name / Admin Name) *
-                </label>
-                <input
-                  type="text"
-                  value={regForm.name}
-                  onChange={(e) => setRegForm({ ...regForm, name: e.target.value })}
-                  className="form-input"
-                  placeholder="उदा. राहुल सचिन पाटील"
-                  required
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div className="form-group mb-2">
-                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                    वापरकर्तानाव (Username) *
-                  </label>
-                  <input
-                    type="text"
-                    value={regForm.username}
-                    onChange={(e) => setRegForm({ ...regForm, username: e.target.value })}
-                    className="form-input"
-                    placeholder="उदा. rahul123"
-                    required
-                  />
-                </div>
-                <div className="form-group mb-2">
-                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                    मोबाईल नंबर *
-                  </label>
-                  <input
-                    type="tel"
-                    value={regForm.mobile}
-                    onChange={(e) => setRegForm({ ...regForm, mobile: e.target.value })}
-                    className="form-input"
-                    placeholder="१० अंकी मोबाईल"
-                    maxLength={10}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem' }}>
-                <div className="form-group mb-2">
-                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                    ईमेल आयडी (ऐच्छिक)
-                  </label>
-                  <input
-                    type="email"
-                    value={regForm.email}
-                    onChange={(e) => setRegForm({ ...regForm, email: e.target.value })}
-                    className="form-input"
-                    placeholder="rahul@example.com"
-                  />
-                </div>
-                <div className="form-group mb-2">
-                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                    भूमिका (Role)
-                  </label>
-                  <div style={{
-                    background: '#FEF3C7',
-                    border: '1.5px solid #F59E0B',
-                    color: '#92400E',
-                    padding: '0.55rem 0.75rem',
-                    borderRadius: '8px',
-                    fontSize: '0.85rem',
-                    fontWeight: 800,
-                    textAlign: 'center'
-                  }}>
-                    👑 मंडळ प्रमुख (Super Admin)
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div className="form-group mb-3">
-                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                    पासवर्ड *
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type={showPass ? 'text' : 'password'}
-                      value={regForm.password}
-                      onChange={(e) => setRegForm({ ...regForm, password: e.target.value })}
-                      className="form-input"
-                      placeholder="किमान ४ अक्षरे"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPass(!showPass)}
-                      style={{
-                        position: 'absolute',
-                        right: '8px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                        color: '#78716C'
-                      }}
-                    >
-                      {showPass ? '🙈' : '👁️'}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="form-group mb-3">
-                  <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
-                    पुष्टी पासवर्ड *
-                  </label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      type={showConfirmPass ? 'text' : 'password'}
-                      value={regForm.confirmPassword}
-                      onChange={(e) => setRegForm({ ...regForm, confirmPassword: e.target.value })}
-                      className="form-input"
-                      placeholder="पासवर्ड पुन्हा टाका"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPass(!showConfirmPass)}
-                      style={{
-                        position: 'absolute',
-                        right: '8px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                        color: '#78716C'
-                      }}
-                    >
-                      {showConfirmPass ? '🙈' : '👁️'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submittingReg}
-                className="btn btn-primary btn-lg"
-                style={{
-                  width: '100%',
-                  marginTop: '0.5rem',
-                  padding: '0.85rem',
-                  fontSize: '1rem',
-                  fontWeight: 800,
-                  borderRadius: '12px'
-                }}
-              >
-                {submittingReg ? 'नोंदणी होत आहे...' : '📝 नवीन खाते तयार करा व लॉगिन व्हा'}
-              </button>
-
-              <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('login')}
+                  onClick={() => setShowPass(!showPass)}
                   style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
                     background: 'none',
                     border: 'none',
-                    color: 'var(--color-primary)',
-                    fontSize: '0.88rem',
-                    fontWeight: 700,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    color: '#78716C'
                   }}
                 >
-                  आधीच खाते आहे का? <span style={{ color: 'var(--color-saffron)' }}>येथे लॉगिन करा →</span>
+                  {showPass ? '🙈' : '👁️'}
                 </button>
               </div>
-            </form>
-          )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={submittingLogin}
+              className="btn btn-primary btn-lg"
+              style={{
+                width: '100%',
+                marginTop: '1.25rem',
+                padding: '0.85rem',
+                fontSize: '1rem',
+                fontWeight: 800,
+                borderRadius: '12px'
+              }}
+            >
+              {submittingLogin ? 'प्रमाणीकरण होत आहे...' : '🔐 समिती लॉगिन करा'}
+            </button>
+          </form>
+
+
 
           {/* Public Website Link */}
           <div style={{ textAlign: 'center', marginTop: '1.75rem', paddingTop: '1.25rem', borderTop: '1px solid var(--color-border)' }}>

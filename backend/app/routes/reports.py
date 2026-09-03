@@ -62,46 +62,107 @@ def get_financial_report():
 @token_required
 @role_required("super_admin", "treasurer")
 def export_csv_report():
-    report_type = request.args.get("type", "all")
     festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
+    settings = db.db.settings.find_one({"key": "mandal_settings"}) or {}
+    mandal_name = settings.get("mandalName", Config.MANDAL_NAME)
     
     output = io.StringIO()
     # Write UTF-8 BOM so Microsoft Excel and spreadsheet tools display Marathi correctly
     output.write('\ufeff')
     writer = csv.writer(output)
     
-    if report_type in ["income", "all"]:
-        writer.writerow(["--- जमा नोंदी (INCOME RECORDS) ---"])
-        writer.writerow(["दिनांक (Date)", "प्रवर्ग (Category)", "देणगीदार / स्रोत (Donor/Source)", "रक्कम (Amount ₹)", "पद्धत (Mode)", "पावती / संदर्भ (Receipt/Ref)", "नोंद कर्ता (Added By)", "स्थिती (Status)"])
-        incomes = db.db.income.find({"festivalYear": festival_year}).sort("date", -1)
-        for inc in incomes:
-            writer.writerow([
-                str(inc.get("date", ""))[:10],
-                inc.get("category", ""),
-                inc.get("donorName", "") or inc.get("source", ""),
-                inc.get("amount", 0),
-                inc.get("paymentMode", ""),
-                inc.get("referenceNumber", "") or inc.get("receiptNumber", ""),
-                inc.get("addedByName", ""),
-                inc.get("status", "")
-            ])
-        writer.writerow([])
+    # Professional Header Block
+    writer.writerow(["मंडळाचे नाव:", mandal_name])
+    writer.writerow(["उत्सव वर्ष:", f"गणेशोत्सव {festival_year}"])
+    writer.writerow(["अहवाल दिनांक:", datetime.datetime.now().strftime("%d/%m/%Y")])
+    writer.writerow([])
+    
+    # Unified Professional Table Columns
+    writer.writerow([
+        "अ.क्र. (Sr No)",
+        "दिनांक (Date)",
+        "प्रकार (Type)",
+        "प्रवर्ग (Category)",
+        "तपशील / नाव / विक्रेता (Party / Description)",
+        "जमा रक्कम (Credit ₹)",
+        "खर्च रक्कम (Debit ₹)",
+        "भरणा पद्धत (Mode)",
+        "पावती / बिल क्र. (Receipt/Bill No)",
+        "नोंद कर्ता (Added By)",
+        "स्थिती (Status)"
+    ])
+    
+    incomes = list(db.db.income.find({"festivalYear": festival_year}))
+    expenses = list(db.db.expenses.find({"festivalYear": festival_year}))
+    
+    # Merge and sort chronologically
+    combined = []
+    for inc in incomes:
+        combined.append({
+            "date": str(inc.get("date", ""))[:10],
+            "type": "जमा (INCOME)",
+            "category": inc.get("category", "वर्गणी"),
+            "party": inc.get("donorName", "") or inc.get("source", ""),
+            "credit": float(inc.get("amount", 0)),
+            "debit": 0.0,
+            "mode": inc.get("paymentMode", "CASH"),
+            "ref": inc.get("receiptNumber", "") or inc.get("referenceNumber", ""),
+            "addedBy": inc.get("addedByName", ""),
+            "status": inc.get("status", "ACTIVE")
+        })
+    for exp in expenses:
+        combined.append({
+            "date": str(exp.get("date", ""))[:10],
+            "type": "खर्च (EXPENSE)",
+            "category": exp.get("category", "इतर खर्च"),
+            "party": f"{exp.get('vendor', '')} - {exp.get('description', '')}".strip(" -"),
+            "credit": 0.0,
+            "debit": float(exp.get("amount", 0)),
+            "mode": exp.get("paymentMode", "CASH"),
+            "ref": exp.get("billNumber", "") or "बिल",
+            "addedBy": exp.get("addedByName", ""),
+            "status": exp.get("status", "APPROVED")
+        })
         
-    if report_type in ["expense", "all"]:
-        writer.writerow(["--- खर्च नोंदी (EXPENSE RECORDS) ---"])
-        writer.writerow(["दिनांक (Date)", "प्रवर्ग (Category)", "तपशील (Description)", "विक्रेता / खर्च व्यक्ती (Vendor)", "रक्कम (Amount ₹)", "पद्धत (Mode)", "बिल क्र. (Bill No)", "स्थिती (Status)"])
-        expenses = db.db.expenses.find({"festivalYear": festival_year}).sort("date", -1)
-        for exp in expenses:
-            writer.writerow([
-                str(exp.get("date", ""))[:10],
-                exp.get("category", ""),
-                exp.get("description", ""),
-                exp.get("vendor", ""),
-                exp.get("amount", 0),
-                exp.get("paymentMode", ""),
-                exp.get("billNumber", ""),
-                exp.get("status", "")
-            ])
+    combined.sort(key=lambda x: x["date"])
+    
+    total_credit = 0.0
+    total_debit = 0.0
+    
+    for idx, row in enumerate(combined, 1):
+        total_credit += row["credit"]
+        total_debit += row["debit"]
+        writer.writerow([
+            idx,
+            row["date"],
+            row["type"],
+            row["category"],
+            row["party"],
+            row["credit"] if row["credit"] > 0 else "0",
+            row["debit"] if row["debit"] > 0 else "0",
+            row["mode"].upper(),
+            row["ref"],
+            row["addedBy"],
+            row["status"]
+        ])
+        
+    # Table Summary / Total Row
+    writer.writerow([])
+    writer.writerow([
+        "",
+        "",
+        "एकूण (TOTAL)",
+        "",
+        "",
+        f"₹ {total_credit:,.2f}",
+        f"₹ {total_debit:,.2f}",
+        "",
+        "",
+        "",
+        f"शिल्लक: ₹ {(total_credit - total_debit):,.2f}"
+    ])
+    writer.writerow([])
+    writer.writerow(["स्वाक्षरी: अध्यक्ष / President", "", "", "", "", "स्वाक्षरी: खजिनदार / Treasurer"])
             
     output.seek(0)
     return Response(

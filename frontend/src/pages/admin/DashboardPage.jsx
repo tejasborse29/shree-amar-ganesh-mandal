@@ -304,26 +304,7 @@ const DashboardPage = () => {
         </div>
       )}
 
-      {/* 5. STICKY MOBILE FLOATING ACTION BAR (+ जमा, - खर्च) (Matching Screenshot 4) */}
-      <div className="sticky-action-bar">
-        {hasRole(['super_admin', 'treasurer', 'receipt_manager', 'event_manager', 'volunteer']) ? (
-          <button
-            onClick={() => { setCreatedReceipt(null); setQuickReceiptModal(true); }}
-            className="btn-action-green"
-          >
-            <span>+</span> जमा
-          </button>
-        ) : <div />}
 
-        {hasRole(['super_admin', 'treasurer', 'receipt_manager', 'event_manager', 'volunteer']) ? (
-          <button
-            onClick={() => setQuickExpenseModal(true)}
-            className="btn-action-red"
-          >
-            <span>-</span> खर्च
-          </button>
-        ) : <div />}
-      </div>
 
       {/* QUICK RECEIPT MODAL */}
       <Modal

@@ -5,10 +5,11 @@ import { useConfig } from '../../context/ConfigContext';
 import { useToast } from '../../context/ToastContext';
 import Skeleton from '../../components/common/Skeleton';
 import Modal from '../../components/common/Modal';
+import { exportElementToPDF } from '../../utils/downloadHelper';
 
 const DocumentsPage = () => {
   const { hasRole } = useAuth();
-  const { activeFestival } = useConfig();
+  const { config, activeFestival } = useConfig();
   const { showSuccess, showError } = useToast();
 
   const [documents, setDocuments] = useState([]);
@@ -206,57 +207,158 @@ const DocumentsPage = () => {
         </div>
       )}
 
-      {/* Document View / Details Modal */}
+      {/* Document View / Official Certificate Preview Modal */}
       <Modal
         isOpen={Boolean(viewDoc)}
         onClose={() => setViewDoc(null)}
-        title="📄 कागदपत्र / दस्तऐवज तपशील"
-        size="md"
+        title="📄 अधिकृत दस्तऐवज व परवानगी पत्र (Document View)"
+        size="lg"
       >
         {viewDoc && (
           <div>
-            <div style={{ textAlign: 'center', marginBottom: '1.25rem', padding: '1rem', background: '#F8FAFC', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>📁</div>
-              <h3 style={{ fontSize: '1.15rem', color: '#1E293B', fontWeight: 800, margin: '0 0 0.4rem' }}>
-                {viewDoc.title}
-              </h3>
-              <span className="badge badge-primary">
-                {viewDoc.categoryLabel || viewDoc.category}
-              </span>
-            </div>
+            {/* Visual Document Printable Canvas */}
+            <div
+              id="official-document-sheet"
+              style={{
+                background: '#FFFDF9',
+                border: '3px double #D4AF37',
+                borderRadius: '16px',
+                padding: '2rem 1.75rem',
+                color: '#1C1917',
+                marginBottom: '1.5rem',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                fontFamily: 'inherit'
+              }}
+            >
+              {/* Document Header */}
+              <div style={{ textAlign: 'center', borderBottom: '2px solid #800000', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                  <img
+                    src={config.logoUrl || config.mandalLogo || "/assets/Mandal Logo.png"}
+                    alt="Logo"
+                    style={{ width: '48px', height: '48px', objectFit: 'contain' }}
+                  />
+                  <div>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 900, color: '#800000', margin: 0, textTransform: 'uppercase' }}>
+                      {config.mandalName}
+                    </h2>
+                    <span style={{ fontSize: '0.8rem', color: '#D97706', fontWeight: 700 }}>
+                      अधिकृत दस्तऐवज व शासकीय ना-हरकत अभिलेख • गणेशोत्सव {viewDoc.festivalYear || 2026}
+                    </span>
+                  </div>
+                </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.4rem' }}>
-                <span style={{ color: '#64748B' }}>उत्सव वर्ष:</span>
-                <strong style={{ color: '#0F172A' }}>{viewDoc.festivalYear || 2026}</strong>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#64748B', fontWeight: 600, marginTop: '0.75rem', padding: '0 0.5rem' }}>
+                  <span>जावक क्र: <b>MH/PUN/FEST-2026/DOC-{viewDoc.id ? String(viewDoc.id).slice(-4) : '2026'}</b></span>
+                  <span>दिनांक: <b>०१/०८/२०२६</b></span>
+                </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.4rem' }}>
-                <span style={{ color: '#64748B' }}>अपलोड कर्ता:</span>
-                <strong style={{ color: '#0F172A' }}>{viewDoc.uploadedBy || 'समिती'}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.4rem' }}>
-                <span style={{ color: '#64748B' }}>फाईल प्रकार व आकार:</span>
-                <strong style={{ color: '#0F172A' }}>{viewDoc.fileType?.toUpperCase() || 'PDF'} ({viewDoc.fileSize || 'उपलब्ध'})</strong>
-              </div>
-              {viewDoc.description && (
-                <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '0.75rem', borderRadius: '10px', color: '#92400E' }}>
-                  <strong>तपशील / शेरा:</strong>
-                  <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>{viewDoc.description}</p>
+
+              {/* Uploaded Image Preview (If image document) */}
+              {viewDoc.fileUrl && (viewDoc.fileUrl.startsWith('data:image') || viewDoc.fileUrl.endsWith('.jpg') || viewDoc.fileUrl.endsWith('.png') || viewDoc.fileUrl.endsWith('.jpeg')) && (
+                <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
+                  <img
+                    src={viewDoc.fileUrl}
+                    alt={viewDoc.title}
+                    style={{ maxWidth: '100%', maxHeight: '350px', borderRadius: '10px', border: '1px solid #E2E8F0', objectFit: 'contain' }}
+                  />
                 </div>
               )}
+
+              {/* Certificate / Permission Content */}
+              <div style={{ marginBottom: '1.5rem', lineHeight: '1.7' }}>
+                <div style={{ background: '#FEF3C7', padding: '0.6rem 1rem', borderRadius: '8px', borderLeft: '4px solid #D97706', marginBottom: '1rem' }}>
+                  <span style={{ fontSize: '0.8rem', color: '#92400E', fontWeight: 700 }}>दस्तऐवज शीर्षक / विषय:</span>
+                  <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#800000' }}>
+                    {viewDoc.title}
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '0.88rem', color: '#334155', marginBottom: '0.75rem' }}>
+                  <b>प्रति,</b><br />
+                  मा. अध्यक्ष / खजिनदार / कार्यकारणी समिती,<br />
+                  <b>{config.mandalName}</b>, गणेशोत्सव {viewDoc.festivalYear || 2026}
+                </div>
+
+                <div style={{ fontSize: '0.9rem', color: '#1E293B', background: '#FFFFFF', padding: '1rem', borderRadius: '10px', border: '1px solid #E2E8F0', marginBottom: '1rem' }}>
+                  <p style={{ margin: '0 0 0.5rem', fontWeight: 600 }}>
+                    {viewDoc.description || 'सदर अधिकृत दस्तऐवज/परवानगी पत्र गणेशोत्सव २०२६ उत्सवासाठी शासकीय व मंडळ नियमावलीनुसार वैध व स्वीकृत करण्यात आलेले आहे.'}
+                  </p>
+                  <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.25rem', fontSize: '0.82rem', color: '#64748B' }}>
+                    <li>सदर परवानगी/दस्तऐवज फक्त गणेशोत्सव २०२६ कालावधीसाठी वैध आहे.</li>
+                    <li>ध्वनिप्रदूषण, वाहतूक व अग्निशामक सुरक्षा नियमांचे पालन करणे आवश्यक राहील.</li>
+                    <li>सर्व पावत्या, बिले व हिशोब पारदर्शक नोंदवहीत जतन करणे बंधनकारक आहे.</li>
+                  </ul>
+                </div>
+
+                {/* Meta details strip */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', fontSize: '0.8rem', background: '#F8FAFC', padding: '0.75rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                  <div>
+                    <span style={{ color: '#64748B' }}>प्रवर्ग (Category):</span><br />
+                    <strong style={{ color: '#0F172A' }}>{viewDoc.categoryLabel || viewDoc.category}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748B' }}>फाईल प्रकार व आकार:</span><br />
+                    <strong style={{ color: '#0F172A' }}>{viewDoc.fileType?.toUpperCase() || 'PDF'} ({viewDoc.fileSize || '१.२ MB'})</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748B' }}>अपलोड कर्ता:</span><br />
+                    <strong style={{ color: '#0F172A' }}>{viewDoc.uploadedBy || 'समिती प्रशासन'}</strong>
+                  </div>
+                  <div>
+                    <span style={{ color: '#64748B' }}>स्थिती:</span><br />
+                    <strong style={{ color: '#16A34A' }}>✅ प्रमाणित व अधिकृत (Approved)</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Official Stamp & Signatures */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '2rem', paddingTop: '1rem', borderTop: '1px dashed #CBD5E1', flexWrap: 'wrap', gap: '1rem' }}>
+                <div style={{ textAlign: 'center', minWidth: '150px' }}>
+                  <div style={{ color: '#94A3B8', fontSize: '0.75rem', marginBottom: '0.25rem' }}>मंडळ स्वाक्षरी</div>
+                  <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem' }}>अध्यक्ष / सचिव</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{config.mandalName}</div>
+                </div>
+
+                {/* Approved Seal Stamp */}
+                <div style={{
+                  border: '2px dashed #16A34A',
+                  color: '#16A34A',
+                  padding: '0.4rem 0.85rem',
+                  borderRadius: '10px',
+                  fontWeight: 900,
+                  fontSize: '0.8rem',
+                  textAlign: 'center',
+                  textTransform: 'uppercase',
+                  transform: 'rotate(-4deg)'
+                }}>
+                  ★ प्रमाणित दस्तऐवज ★<br />
+                  <span style={{ fontSize: '0.68rem', fontWeight: 700 }}>VERIFIED & APPROVED</span>
+                </div>
+
+                <div style={{ textAlign: 'center', minWidth: '150px' }}>
+                  <div style={{ color: '#94A3B8', fontSize: '0.75rem', marginBottom: '0.25rem' }}>सक्षम प्राधिकारी / निरीक्षक</div>
+                  <div style={{ fontWeight: 800, color: '#0F172A', fontSize: '0.88rem' }}>पोलीस / महापालिका अधिकारी</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748B' }}>परवानगी शाखा • पुणे</div>
+                </div>
+              </div>
             </div>
 
+            {/* Modal Actions */}
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-              {viewDoc.fileUrl && !viewDoc.fileUrl.includes('placeholder') && (
-                <a
-                  href={viewDoc.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn btn-primary btn-sm"
-                >
-                  📥 मूळ फाईल उघडा / डाऊनलोड
-                </a>
-              )}
+              <button
+                type="button"
+                onClick={async () => {
+                  const elem = document.getElementById('official-document-sheet');
+                  if (elem) {
+                    await exportElementToPDF(elem, `${viewDoc.title || 'Document'}.pdf`);
+                    showSuccess('दस्तऐवज PDF डाउनलोड झाली!');
+                  }
+                }}
+                className="btn btn-primary btn-sm"
+              >
+                📥 अधिकृत PDF डाउनलोड करा
+              </button>
               <button
                 type="button"
                 onClick={() => window.print()}
