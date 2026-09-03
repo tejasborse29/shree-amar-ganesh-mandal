@@ -4,11 +4,11 @@ import { useConfig } from '../../context/ConfigContext';
 import { useToast } from '../../context/ToastContext';
 import Skeleton from '../../components/common/Skeleton';
 import Modal from '../../components/common/Modal';
-import { downloadReportPDF, downloadReportCSV } from '../../utils/downloadHelper';
+import { downloadReportPDF, downloadReportCSV, exportElementToPDF } from '../../utils/downloadHelper';
 
 const ReportsPage = () => {
   const { showSuccess, showError } = useToast();
-  const { activeFestival } = useConfig();
+  const { config, activeFestival } = useConfig();
   const [period, setPeriod] = useState('month'); // today, 7days, 30days, month, custom
   const [groupBy, setGroupBy] = useState('head'); // head, worker, mode
   const [reportData, setReportData] = useState(null);
@@ -38,6 +38,12 @@ const ReportsPage = () => {
   const handleDownloadPDF = async () => {
     const year = activeFestival?.festivalYear || 2026;
     try {
+      const elem = document.getElementById('financial-report-printable-area');
+      if (elem) {
+        await exportElementToPDF(elem, `AMGM_Financial_Report_${year}.pdf`);
+        showSuccess('अहवाल PDF डाउनलोड झाली!');
+        return;
+      }
       await downloadReportPDF(year, `AMGM_Financial_Report_${year}.pdf`);
       showSuccess('अहवाल PDF डाउनलोड झाली!');
     } catch (e) {
@@ -58,8 +64,8 @@ const ReportsPage = () => {
   return (
     <div style={{ maxWidth: '900px', margin: '0 auto' }}>
       
-      {/* 1. TOP HEADER & EXPORT ACTIONS (Matching Screenshot 4 bottom left) */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+      {/* 1. TOP HEADER & EXPORT ACTIONS */}
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
         <div>
           <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1C1917', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             अहवाल · {activeFestival?.name || 'गणेशोत्सव'}
@@ -81,6 +87,16 @@ const ReportsPage = () => {
           </button>
         </div>
       </div>
+
+      <div id="financial-report-printable-area" style={{ background: '#FFFFFF', padding: '1.25rem', borderRadius: '16px', border: '1px solid #E7E5E4' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.25rem', paddingBottom: '0.75rem', borderBottom: '2px solid #D4AF37' }}>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#800000', margin: '0 0 0.25rem' }}>
+            {config.mandalName}
+          </h2>
+          <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#D97706' }}>
+            अधिकृत आर्थिक ताळेबंद अहवाल · {activeFestival?.name || 'गणेशोत्सव'} {activeFestival?.festivalYear || config.festivalYear}
+          </div>
+        </div>
 
       {/* 2. TIME PERIOD SELECTOR (Matching Screenshot 4 bottom left) */}
       <div className="search-chip-bar">
@@ -307,6 +323,7 @@ const ReportsPage = () => {
           )}
         </div>
       )}
+      </div>
 
       {/* FILTER BOTTOM SHEET MODAL (Matching Screenshot 4 bottom right) */}
       <Modal

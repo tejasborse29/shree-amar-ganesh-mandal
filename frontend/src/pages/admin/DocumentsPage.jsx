@@ -15,6 +15,7 @@ const DocumentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [viewDoc, setViewDoc] = useState(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -182,15 +183,13 @@ const DocumentsPage = () => {
               </div>
 
               <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                <a
-                  href={doc.fileUrl}
-                  target="_blank"
-                  rel="noreferrer"
+                <button
+                  type="button"
+                  onClick={() => setViewDoc(doc)}
                   className="btn btn-outline btn-sm"
-                  style={{ textDecoration: 'none' }}
                 >
                   👁️ पहा / 📥
-                </a>
+                </button>
                 {hasRole(['super_admin']) && (
                   <button
                     onClick={() => handleDelete(doc.id || doc._id, doc.title)}
@@ -206,6 +205,76 @@ const DocumentsPage = () => {
           ))}
         </div>
       )}
+
+      {/* Document View / Details Modal */}
+      <Modal
+        isOpen={Boolean(viewDoc)}
+        onClose={() => setViewDoc(null)}
+        title="📄 कागदपत्र / दस्तऐवज तपशील"
+        size="md"
+      >
+        {viewDoc && (
+          <div>
+            <div style={{ textAlign: 'center', marginBottom: '1.25rem', padding: '1rem', background: '#F8FAFC', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>📁</div>
+              <h3 style={{ fontSize: '1.15rem', color: '#1E293B', fontWeight: 800, margin: '0 0 0.4rem' }}>
+                {viewDoc.title}
+              </h3>
+              <span className="badge badge-primary">
+                {viewDoc.categoryLabel || viewDoc.category}
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.4rem' }}>
+                <span style={{ color: '#64748B' }}>उत्सव वर्ष:</span>
+                <strong style={{ color: '#0F172A' }}>{viewDoc.festivalYear || 2026}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.4rem' }}>
+                <span style={{ color: '#64748B' }}>अपलोड कर्ता:</span>
+                <strong style={{ color: '#0F172A' }}>{viewDoc.uploadedBy || 'समिती'}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #F1F5F9', paddingBottom: '0.4rem' }}>
+                <span style={{ color: '#64748B' }}>फाईल प्रकार व आकार:</span>
+                <strong style={{ color: '#0F172A' }}>{viewDoc.fileType?.toUpperCase() || 'PDF'} ({viewDoc.fileSize || 'उपलब्ध'})</strong>
+              </div>
+              {viewDoc.description && (
+                <div style={{ background: '#FFFBEB', border: '1px solid #FDE68A', padding: '0.75rem', borderRadius: '10px', color: '#92400E' }}>
+                  <strong>तपशील / शेरा:</strong>
+                  <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem' }}>{viewDoc.description}</p>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              {viewDoc.fileUrl && !viewDoc.fileUrl.includes('placeholder') && (
+                <a
+                  href={viewDoc.fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-primary btn-sm"
+                >
+                  📥 मूळ फाईल उघडा / डाऊनलोड
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="btn btn-outline btn-sm"
+              >
+                🖨️ प्रिंट करा
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewDoc(null)}
+                className="btn btn-ghost btn-sm"
+              >
+                बंद करा
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Upload Document Modal */}
       <Modal

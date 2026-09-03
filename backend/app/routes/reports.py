@@ -66,28 +66,30 @@ def export_csv_report():
     festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
     
     output = io.StringIO()
+    # Write UTF-8 BOM so Microsoft Excel and spreadsheet tools display Marathi correctly
+    output.write('\ufeff')
     writer = csv.writer(output)
     
     if report_type in ["income", "all"]:
-        writer.writerow(["--- INCOME RECORDS (जमा नोंदी) ---"])
-        writer.writerow(["Date", "Category", "Donor/Source", "Amount", "Mode", "Reference", "Added By", "Status"])
+        writer.writerow(["--- जमा नोंदी (INCOME RECORDS) ---"])
+        writer.writerow(["दिनांक (Date)", "प्रवर्ग (Category)", "देणगीदार / स्रोत (Donor/Source)", "रक्कम (Amount ₹)", "पद्धत (Mode)", "पावती / संदर्भ (Receipt/Ref)", "नोंद कर्ता (Added By)", "स्थिती (Status)"])
         incomes = db.db.income.find({"festivalYear": festival_year}).sort("date", -1)
         for inc in incomes:
             writer.writerow([
                 str(inc.get("date", ""))[:10],
                 inc.get("category", ""),
-                inc.get("donorName", ""),
+                inc.get("donorName", "") or inc.get("source", ""),
                 inc.get("amount", 0),
                 inc.get("paymentMode", ""),
-                inc.get("referenceNumber", ""),
+                inc.get("referenceNumber", "") or inc.get("receiptNumber", ""),
                 inc.get("addedByName", ""),
                 inc.get("status", "")
             ])
         writer.writerow([])
         
     if report_type in ["expense", "all"]:
-        writer.writerow(["--- EXPENSE RECORDS (खर्च नोंदी) ---"])
-        writer.writerow(["Date", "Category", "Description", "Vendor", "Amount", "Mode", "Bill No", "Status"])
+        writer.writerow(["--- खर्च नोंदी (EXPENSE RECORDS) ---"])
+        writer.writerow(["दिनांक (Date)", "प्रवर्ग (Category)", "तपशील (Description)", "विक्रेता / खर्च व्यक्ती (Vendor)", "रक्कम (Amount ₹)", "पद्धत (Mode)", "बिल क्र. (Bill No)", "स्थिती (Status)"])
         expenses = db.db.expenses.find({"festivalYear": festival_year}).sort("date", -1)
         for exp in expenses:
             writer.writerow([
@@ -104,7 +106,7 @@ def export_csv_report():
     output.seek(0)
     return Response(
         output.getvalue(),
-        mimetype="text/csv",
+        mimetype="text/csv; charset=utf-8",
         headers={"Content-Disposition": f"attachment; filename=AMGM_Financial_Report_{festival_year}.csv"}
     )
 
