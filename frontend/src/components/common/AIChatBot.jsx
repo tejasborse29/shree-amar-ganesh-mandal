@@ -131,82 +131,119 @@ const AIChatBot = () => {
 
   return (
     <>
+      <style>{`
+        .ai-chatbot-floating-trigger {
+          position: fixed;
+          bottom: 82px;
+          right: 18px;
+          z-index: 999;
+        }
+        .ai-chatbot-trigger-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.45rem;
+          padding: 0.55rem 0.95rem;
+          border-radius: 999px;
+          background: linear-gradient(135deg, #800000 0%, #991B1B 100%);
+          color: #FFFFFF;
+          box-shadow: 0 6px 20px rgba(128, 0, 0, 0.35);
+          border: 1.5px solid #FDE047;
+          font-weight: 800;
+          font-size: 0.84rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          animation: pulseGlow 2.5s infinite;
+        }
+        .ai-chatbot-trigger-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(128, 0, 0, 0.45);
+        }
+        .ai-chatbot-sheet-window {
+          position: fixed;
+          bottom: 82px;
+          right: 18px;
+          width: 380px;
+          max-width: calc(100vw - 32px);
+          height: 520px;
+          max-height: 75vh;
+          background: #FFFFFF;
+          border-radius: 20px;
+          box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(212, 175, 55, 0.3);
+          display: flex;
+          flex-direction: column;
+          z-index: 1000;
+          overflow: hidden;
+          animation: slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @media (max-width: 640px) {
+          .ai-chatbot-floating-trigger {
+            bottom: 78px;
+            right: 12px;
+          }
+          .ai-chatbot-trigger-btn {
+            padding: 0.45rem 0.8rem;
+            font-size: 0.78rem;
+          }
+          .ai-chatbot-sheet-window {
+            bottom: 72px;
+            right: 10px;
+            left: 10px;
+            width: auto;
+            max-width: none;
+            height: 480px;
+            max-height: 72vh;
+            border-radius: 18px;
+          }
+        }
+      `}</style>
+
       {/* Floating Trigger Button */}
-      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 999 }}>
+      <div className="ai-chatbot-floating-trigger">
         {!isOpen && (
           <button
             onClick={() => setIsOpen(true)}
-            className="btn btn-primary"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.6rem',
-              padding: '0.8rem 1.25rem',
-              borderRadius: '999px',
-              boxShadow: '0 8px 24px rgba(128, 0, 0, 0.35)',
-              border: '2px solid #FDE047',
-              fontWeight: 800,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-              animation: 'pulseGlow 2.5s infinite'
-            }}
+            className="ai-chatbot-trigger-btn"
           >
-            <span style={{ fontSize: '1.3rem' }}>🤖</span>
-            <span>मंडळ AI सहाय्यक</span>
+            <span style={{ fontSize: '1.15rem' }}>🤖</span>
+            <span>AI सहाय्यक</span>
           </button>
         )}
       </div>
 
       {/* Chat Window Modal / Bottom Sheet */}
       {isOpen && (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          width: 'calc(100vw - 40px)',
-          maxWidth: '420px',
-          height: '580px',
-          maxHeight: '85vh',
-          background: '#FFFFFF',
-          borderRadius: '24px',
-          boxShadow: '0 16px 48px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(212, 175, 55, 0.3)',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 1000,
-          overflow: 'hidden',
-          animation: 'slideUpSheet 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
-        }}>
+        <div className="ai-chatbot-sheet-window">
           
           {/* Chat Header */}
           <div style={{
             background: 'linear-gradient(135deg, #800000 0%, #991B1B 100%)',
             color: '#FFFFFF',
-            padding: '1rem 1.25rem',
+            padding: '0.85rem 1.1rem',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottom: '2px solid #FDE047'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
               <div style={{
-                width: '38px',
-                height: '38px',
+                width: '34px',
+                height: '34px',
                 borderRadius: '50%',
                 background: '#FFFBEB',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1.25rem',
+                fontSize: '1.15rem',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
               }}>
                 🤖
               </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: '1rem', color: '#FDE047' }}>
+                <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#FDE047' }}>
                   मंडळ AI सहाय्यक
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#FEF08A', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22C55E' }}></span>
+                <div style={{ fontSize: '0.72rem', color: '#FEF08A', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22C55E' }}></span>
                   ऑनलाइन • २४x७ मदत
                 </div>
               </div>

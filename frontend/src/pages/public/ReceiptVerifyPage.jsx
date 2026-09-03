@@ -51,7 +51,7 @@ const ReceiptVerifyPage = () => {
             </Link>
           </div>
         ) : receipt ? (
-          <div className="amgm-card amgm-card-gold" style={{ padding: '2.5rem', textAlign: 'center' }}>
+          <div id="official-printable-receipt" className="amgm-card amgm-card-gold" style={{ padding: '2.5rem', textAlign: 'center', background: '#FFFFFF' }}>
             
             {/* Verified Stamp Header */}
             <div style={{
@@ -71,11 +71,11 @@ const ReceiptVerifyPage = () => {
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <img src="/assets/Mandal Logo.png" alt="Logo" style={{ width: '56px', height: '56px', margin: '0 auto 0.5rem', objectFit: 'contain' }} />
+              <img src={config.logoUrl || "/assets/Mandal Logo.png"} alt="Logo" style={{ width: '56px', height: '56px', margin: '0 auto 0.5rem', objectFit: 'contain' }} />
               <h2 style={{ fontSize: '1.4rem', color: 'var(--color-primary)', fontWeight: 800 }}>
                 {receipt.mandalName || config.mandalName}
               </h2>
-              <span className="badge badge-primary">गणेशोत्सव २०२६</span>
+              <span className="badge badge-primary">गणेशोत्सव {receipt.festivalYear || 2026}</span>
             </div>
 
             {/* Receipt Verification Details */}
@@ -129,7 +129,10 @@ const ReceiptVerifyPage = () => {
 
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
               <button
-                onClick={() => downloadReceiptPDF(receipt.receiptNumber, `Receipt_${receipt.receiptNumber}.pdf`)}
+                onClick={() => {
+                  const elem = document.getElementById('official-printable-receipt');
+                  downloadReceiptPDF(receipt.receiptNumber, `Receipt_${receipt.receiptNumber}.pdf`, elem);
+                }}
                 className="btn btn-gold btn-sm"
               >
                 📥 अधिकृत PDF डाउनलोड करा
