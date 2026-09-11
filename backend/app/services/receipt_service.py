@@ -106,9 +106,11 @@ def create_receipt_record(data: dict, current_user: dict) -> dict:
         "transactionRef": transaction_ref,
         "notes": notes,
         "status": "ACTIVE",
+        "collectedBy": current_user.get("id"),
+        "collectedByName": current_user.get("name", "समिती प्रतिनिधी"),
         "issuedBy": current_user.get("id"),
-        "issuedByName": current_user.get("name"),
-        "issuedByRole": current_user.get("role"),
+        "issuedByName": current_user.get("name", "समिती प्रतिनिधी"),
+        "issuedByRole": current_user.get("role", "volunteer"),
         "createdAt": now,
         "updatedAt": now
     }
@@ -131,8 +133,10 @@ def create_receipt_record(data: dict, current_user: dict) -> dict:
         "receiptNumber": receipt_number,
         "donorName": donor_name,
         "status": "ACTIVE",
+        "collectedBy": current_user.get("id"),
+        "collectedByName": current_user.get("name", "समिती प्रतिनिधी"),
         "addedBy": current_user.get("id"),
-        "addedByName": current_user.get("name"),
+        "addedByName": current_user.get("name", "समिती प्रतिनिधी"),
         "createdAt": now
     }
     db.db.income.insert_one(income_doc)

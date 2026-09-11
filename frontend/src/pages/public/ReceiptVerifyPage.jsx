@@ -108,8 +108,8 @@ const ReceiptVerifyPage = () => {
                 <span style={{ fontWeight: 600, textTransform: 'uppercase' }}>{receipt.paymentMode}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #F3F4F6' }}>
-                <span style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>पावती घेणारे:</span>
-                <span style={{ fontWeight: 600 }}>{receipt.collectedBy}</span>
+                <span style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>पावती देणारे (स्वीकारकर्ता):</span>
+                <span style={{ fontWeight: 700, color: 'var(--color-primary)' }}>{receipt.collectedBy || receipt.collectedByName || receipt.issuedByName || 'समिती प्रतिनिधी'}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0' }}>
                 <span style={{ color: 'var(--color-text-muted)', fontWeight: 600 }}>स्थिती:</span>

@@ -173,8 +173,7 @@ def generate_receipt_pdf(receipt: dict, mandal: dict, verify_url: str = "") -> b
     donor_mobile = sanitize_text(receipt.get("donorMobile", "-"))
     donor_address = sanitize_text(receipt.get("donorAddress", "-"))
     payment_mode = sanitize_text(str(receipt.get("paymentMode", "CASH")).upper())
-    transaction_ref = sanitize_text(receipt.get("transactionRef") or "N/A")
-    collected_by = sanitize_text(receipt.get("collectedByName") or receipt.get("collectedBy", "Digital Vargani Portal"))
+    collected_by = sanitize_text(receipt.get("collectedByName") or receipt.get("issuedByName") or receipt.get("addedByName") or receipt.get("collectedBy", "समिती प्रतिनिधी"))
     status = "वैध (ACTIVE)" if receipt.get("status", "ACTIVE") == "ACTIVE" else "रद्द (CANCELLED)"
     
     # Generate QR Code image in memory
@@ -211,7 +210,7 @@ def generate_receipt_pdf(receipt: dict, mandal: dict, verify_url: str = "") -> b
         [Paragraph("Mobile (मोबाईल):", cell_label_style), Paragraph(f"{donor_mobile}", cell_val_style)],
         [Paragraph("Address (पत्ता):", cell_label_style), Paragraph(f"{donor_address}", cell_val_style)],
         [Paragraph("Payment Mode (भरणा):", cell_label_style), Paragraph(f"{payment_mode} (Ref: {transaction_ref})", cell_val_style)],
-        [Paragraph("Received By (स्वीकारकर्ता):", cell_label_style), Paragraph(f"{collected_by}", cell_val_style)],
+        [Paragraph("पावती देणारा (स्वीकारकर्ता):", cell_label_style), Paragraph(f"<b>{collected_by}</b>", cell_val_style)],
         [Paragraph("Status (स्थिती):", cell_label_style), Paragraph(f"<b>{status}</b>", cell_val_style)],
     ]
     left_table = Table(left_details_data, colWidths=[145, 225])

@@ -120,8 +120,10 @@ const PrintableReceipt = ({ receipt, onClose }) => {
               </span>
             </div>
             <div className="receipt-field-row">
-              <span className="receipt-field-label">स्वीकारकर्ता:</span>
-              <span className="receipt-field-value">{receipt.collectedByName || 'समिती व्यवस्थापन'}</span>
+              <span className="receipt-field-label">पावती देणारा (स्वीकारकर्ता):</span>
+              <span className="receipt-field-value" style={{ fontWeight: 700, color: 'var(--color-primary)' }}>
+                {receipt.collectedByName || receipt.issuedByName || receipt.addedByName || 'समिती व्यवस्थापन'}
+              </span>
             </div>
             {receipt.notes && (
               <div className="receipt-field-row">
