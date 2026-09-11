@@ -46,7 +46,7 @@ export const exportElementToPDF = async (element, defaultFilename = 'download.pd
       });
       pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight, undefined, 'FAST');
     } else {
-      // Standard A4 document format for Ledger & Reports
+      // Standard A4 document format with multi-page support for long tables
       pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -56,10 +56,44 @@ export const exportElementToPDF = async (element, defaultFilename = 'download.pd
       
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pageWidth - (margin * 2);
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const printWidth = pageWidth - (margin * 2);
+      const printHeight = pageHeight - (margin * 2);
       
-      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, Math.min(imgHeight, pageHeight - (margin * 2)), undefined, 'FAST');
+      // Calculate total rendered height in PDF units
+      const totalPdfHeight = (canvas.height * printWidth) / canvas.width;
+      
+      if (totalPdfHeight <= printHeight) {
+        // Fits in a single page
+        pdf.addImage(imgData, 'JPEG', margin, margin, printWidth, totalPdfHeight, undefined, 'FAST');
+      } else {
+        // Multi-page slicing: render canvas slice by slice across A4 pages
+        let currentHeightMm = 0;
+        const pageCanvasHeightPx = (printHeight * canvas.width) / printWidth;
+        
+        while (currentHeightMm < totalPdfHeight) {
+          if (currentHeightMm > 0) {
+            pdf.addPage();
+          }
+          
+          const sourceY = (currentHeightMm * canvas.width) / printWidth;
+          const sourceHeight = Math.min(pageCanvasHeightPx, canvas.height - sourceY);
+          
+          // Create temporary slice canvas
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sourceHeight;
+          const ctx = pageCanvas.getContext('2d');
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(canvas, 0, sourceY, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+          
+          const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.82);
+          const sliceHeightMm = (sourceHeight * printWidth) / canvas.width;
+          pdf.addImage(pageImgData, 'JPEG', margin, margin, printWidth, sliceHeightMm, undefined, 'FAST');
+          
+          currentHeightMm += printHeight;
+        }
+      }
     }
     
     pdf.save(defaultFilename);
@@ -125,18 +159,18 @@ export const downloadReportCSV = async (year, filename = null) => {
   return downloadBlobFile(`/reports/export-csv?year=${year}`, targetFilename);
 };
 
-export const downloadLedgerPDF = async (year, filename = null, domElement = null) => {
+export const downloadLedgerPDF = async (year, filename = null, domElement = null, mode = 'ALL') => {
   const targetFilename = filename || `AMGM_General_Ledger_${year}.pdf`;
   
   // 1. Try crisp client-side rendering first if element provided or present in DOM
   const targetElem = domElement || document.getElementById('ledger-printable-area') || document.querySelector('.admin-table');
   if (targetElem) {
-    const success = await exportElementToPDF(targetElem, targetFilename);
+    const success = await exportElementToPDF(targetElem, targetFilename, { scale: 2 });
     if (success) return true;
   }
 
   // 2. Fallback to backend PDF endpoint
-  return downloadBlobFile(`/reports/ledger-pdf?year=${year}`, targetFilename);
+  return downloadBlobFile(`/reports/ledger-pdf?year=${year}&mode=${mode}`, targetFilename);
 };
 
 export const exportReportToExcel = (reportData, festivalName, year, mandalName) => {

@@ -74,21 +74,34 @@ const LedgerPage = () => {
     // Give React 150ms to re-render the on-screen ledger table with the new filterMode
     await new Promise((resolve) => setTimeout(resolve, 150));
 
+    const year = activeFestival?.festivalYear || 2026;
+    const suffix = filterMode === 'CASH' ? '_Cash' : filterMode === 'ONLINE' ? '_Online' : '_All';
+    const filename = `AMGM_General_Ledger_${year}${suffix}.pdf`;
+    const modeLabel = filterMode === 'CASH' ? 'रोख (Cash)' : filterMode === 'ONLINE' ? 'ऑनलाइन (Online)' : 'सर्व (All)';
+
     try {
-      const year = activeFestival?.festivalYear || 2026;
-      const suffix = filterMode === 'CASH' ? '_Cash' : filterMode === 'ONLINE' ? '_Online' : '_All';
-      const filename = `AMGM_General_Ledger_${year}${suffix}.pdf`;
       const elem = document.getElementById('ledger-printable-area');
+      let success = false;
       
-      if (!elem) {
-        throw new Error('प्रिंट घटक सापडला नाही');
+      if (elem) {
+        success = await exportElementToPDF(elem, filename, { scale: 2 });
       }
 
-      await exportElementToPDF(elem, filename, { scale: 2 });
-      const modeLabel = filterMode === 'CASH' ? 'रोख (Cash)' : filterMode === 'ONLINE' ? 'ऑनलाइन (Online)' : 'सर्व (All)';
+      // If client-side html2canvas failed or element not found, fallback to direct backend PDF download
+      if (!success) {
+        console.warn('Client-side PDF failed, downloading from backend...');
+        await downloadLedgerPDF(year, filename, null, filterMode);
+      }
+
       showSuccess(`नोंदवही ${modeLabel} PDF यशस्वीरीत्या डाउनलोड झाली!`);
     } catch (err) {
-      showError(err.message || 'PDF डाउनलोड करताना त्रुटी आली');
+      console.warn('Primary download threw error, using backend fallback:', err);
+      try {
+        await downloadLedgerPDF(year, filename, null, filterMode);
+        showSuccess(`नोंदवही ${modeLabel} PDF यशस्वीरीत्या डाउनलोड झाली!`);
+      } catch (fallbackErr) {
+        showError('PDF डाउनलोड करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.');
+      }
     } finally {
       setDownloading(false);
     }

@@ -196,14 +196,25 @@ def export_pdf_report():
 @role_required("super_admin", "treasurer")
 def download_ledger_pdf():
     festival_year = int(request.args.get("year", Config.DEFAULT_FESTIVAL_YEAR))
+    mode_filter = request.args.get("mode", "ALL").upper().strip()
     settings = db.db.settings.find_one({"key": "mandal_settings"}) or {
         "mandalName": Config.MANDAL_NAME,
         "mandalTagline": Config.MANDAL_TAGLINE
     }
     
     # Fetch all incomes and expenses for festival year
-    incomes = list(db.db.income.find({"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}))
-    expenses = list(db.db.expenses.find({"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}))
+    inc_query = {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}
+    exp_query = {"festivalYear": festival_year, "status": {"$ne": "CANCELLED"}}
+    
+    if mode_filter == "CASH":
+        inc_query["paymentMode"] = {"$regex": "^(cash|रोख)$", "$options": "i"}
+        exp_query["paymentMode"] = {"$regex": "^(cash|रोख)$", "$options": "i"}
+    elif mode_filter == "ONLINE":
+        inc_query["paymentMode"] = {"$not": {"$regex": "^(cash|रोख)$", "$options": "i"}}
+        exp_query["paymentMode"] = {"$not": {"$regex": "^(cash|रोख)$", "$options": "i"}}
+        
+    incomes = list(db.db.income.find(inc_query))
+    expenses = list(db.db.expenses.find(exp_query))
     
     items = []
     for inc in incomes:
@@ -213,6 +224,7 @@ def download_ledger_pdf():
             "amount": float(inc.get("amount", 0)),
             "personName": inc.get("source") or inc.get("donorName") or "देणगीदार",
             "category": inc.get("category", "वर्गणी"),
+            "paymentMode": inc.get("paymentMode", "Cash"),
             "receiptNumber": inc.get("receiptNumber", ""),
             "date": inc.get("date") or inc.get("createdAt"),
             "dateDay": str(inc.get("date") or inc.get("createdAt") or "")[:10]
@@ -224,6 +236,7 @@ def download_ledger_pdf():
             "amount": float(exp.get("amount", 0)),
             "personName": exp.get("vendor") or "खर्च",
             "category": exp.get("category", "इतर"),
+            "paymentMode": exp.get("paymentMode", "Cash"),
             "billNumber": exp.get("billNumber", ""),
             "receiptNumber": "",
             "date": exp.get("date") or exp.get("createdAt"),
