@@ -279,15 +279,17 @@ const ExpensesPage = () => {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
-              <label className="form-label">भरणा प्रकार (Payment Mode)</label>
+              <label className="form-label">भरणा प्रकार (Payment Mode) *</label>
               <select
                 value={form.paymentMode}
                 onChange={(e) => setForm({ ...form, paymentMode: e.target.value })}
                 className="form-select"
               >
-                <option value="cash">रोख (Cash)</option>
-                <option value="online">UPI / Online</option>
-                <option value="cheque">धनादेश (Cheque)</option>
+                <option value="cash">💵 रोख (Cash)</option>
+                <option value="phonepe">📱 PhonePe (फोन पे)</option>
+                <option value="online">⚡ Google Pay / Paytm / UPI</option>
+                <option value="bank">🏦 बँक ट्रान्सफर (Bank Transfer)</option>
+                <option value="cheque">📜 धनादेश (Cheque)</option>
               </select>
             </div>
             <div className="form-group">

@@ -502,6 +502,21 @@ const DashboardPage = () => {
             </div>
           </div>
 
+          <div className="form-group mb-3">
+            <label className="form-label">भरणा प्रकार (Payment Mode) *</label>
+            <select
+              value={expenseForm.paymentMode || 'cash'}
+              onChange={(e) => setExpenseForm({ ...expenseForm, paymentMode: e.target.value })}
+              className="form-input"
+            >
+              <option value="cash">💵 रोख (Cash)</option>
+              <option value="phonepe">📱 PhonePe (फोन पे)</option>
+              <option value="online">⚡ Google Pay / Paytm / UPI</option>
+              <option value="bank">🏦 बँक ट्रान्सफर (Bank Transfer)</option>
+              <option value="cheque">📜 धनादेश (Cheque)</option>
+            </select>
+          </div>
+
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
             <button type="button" onClick={() => setQuickExpenseModal(false)} className="btn btn-ghost">
               रद्द करा
